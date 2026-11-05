@@ -47,10 +47,10 @@
 
 ### Implementation for User Story 1
 
-- [ ] T010 [P] [US1] Configure PostgreSQL 17 service healthcheck and volume persistence in `docker-compose.yml`
-- [ ] T011 [P] [US1] Configure Redis 7 Alpine service with allkeys-lru memory policy and healthcheck in `docker-compose.yml`
-- [ ] T012 [P] [US1] Configure Mailpit SMTP catcher and Web UI service on ports 1025 and 8025 in `docker-compose.yml`
-- [ ] T013 [US1] Execute and verify local container infrastructure startup and healthcheck via `docker compose ps`
+- [x] T010 [P] [US1] Configure PostgreSQL 17 service healthcheck and volume persistence in `docker-compose.yml`
+- [x] T011 [P] [US1] Configure Redis 7 Alpine service with allkeys-lru memory policy and healthcheck in `docker-compose.yml`
+- [x] T012 [P] [US1] Configure Mailpit SMTP catcher and Web UI service on ports 1025 and 8025 in `docker-compose.yml`
+- [x] T013 [US1] Execute and verify local container infrastructure startup and healthcheck via `docker compose ps`
 
 **Checkpoint**: Infrastructure services are healthy; local database, cache, and mail capture are functional.
 
