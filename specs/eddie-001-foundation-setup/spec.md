@@ -8,6 +8,14 @@
 
 **Input**: User description: "Foundation setup for Ellora backend refactor: Clean Architecture 4-module skeleton, Docker Compose, Flyway baseline, OpenAPI contracts, and characterization tests"
 
+## Clarifications
+
+### Session 2026-11-06
+
+- Q: Phiên bản và bản phân phối JDK nào nên được cài đặt trên máy để xây dựng và kiểm thử backend? → A: Eclipse Temurin JDK 17 (LTS) và Apache Maven qua winget.
+- Q: Đối với các dịch vụ bên ngoài (gửi mail và lưu trữ ảnh Cloudinary), bạn muốn thiết lập trong môi trường local và bộ test như thế nào? → A: Cấu hình sẵn sàng và yêu cầu cung cấp ngay thông tin tài khoản Cloudinary thật và Google SMTP App Password thật trong file .env local ngay từ Phase P0, có tài liệu hướng dẫn và ghi chú rõ ràng các key thật cần điền.
+- Q: Mô hình vận hành docker-compose cho backend khi phát triển và kiểm thử ở local nên được cấu hình theo hướng nào? → A: docker-compose tập trung quản lý các dịch vụ hạ tầng (PostgreSQL 17, Redis 7, Mailpit, PGAdmin); ứng dụng backend chạy trực tiếp trên host thông qua Maven/IDE để tối ưu tốc độ dev/test và debug, đồng thời cung cấp profile app để đóng gói và kiểm thử Docker image khi cần.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Local Development Infrastructure & Environment Readiness (Priority: P1)
@@ -94,8 +102,8 @@ As a maintainer refactoring legacy services, I need a comprehensive characteriza
 
 ### Functional Requirements
 
-- **FR-001**: System MUST provide a declarative container orchestration configuration managing PostgreSQL 17, Redis 7, and Mailpit for local development and testing.
-- **FR-002**: System MUST provide an environment configuration template (`.env.example`) defining all required database, token, mail, and third-party storage properties with descriptive documentation.
+- **FR-001**: System MUST provide a declarative container orchestration configuration managing PostgreSQL 17, Redis 7, and Mailpit for local infrastructure, with an optional tools profile for PGAdmin and an optional app profile for containerized backend verification.
+- **FR-002**: System MUST provide an environment configuration template (`.env.example`) and active `.env` documentation explicitly distinguishing between mockable local properties (database, cache, local mailpit) and required external production-grade secrets (Google SMTP App Password, Cloudinary API keys).
 - **FR-003**: System MUST structure the application into 4 distinct Maven modules (`ellora-domain`, `ellora-application`, `ellora-infrastructure`, `ellora-api`) obeying unidirectional inward dependencies.
 - **FR-004**: System MUST enforce via automated architectural tests that the `ellora-domain` module contains zero external framework dependencies (specifically no Spring, JPA, or serialization libraries).
 - **FR-005**: System MUST enforce via automated architectural tests that API controllers do not directly reference persistence entities, database managers, or persistence repositories.
@@ -124,6 +132,7 @@ As a maintainer refactoring legacy services, I need a comprehensive characteriza
 ## Assumptions
 
 - **Local Docker Engine**: Developers and CI environments have Docker and Docker Compose installed and capable of running Linux containers.
-- **Java 17 SDK**: The execution environment uses standard Java 17 LTS and Maven 3.8+.
+- **Java 17 SDK & Toolchain**: Host environment uses Eclipse Temurin JDK 17 (LTS) and Apache Maven, installed via package manager.
+- **External Secret Provisioning**: Real Cloudinary credentials and Google SMTP App Password are provided by the user in the local `.env` file from Phase P0, with clear indicators of required keys.
 - **Database Reset**: Old development and staging user data can be cleanly initialized from the baseline migration without requiring legacy Cognito user data migration.
 - **Version Control Constraints**: All code changes are committed locally under identity `Eddie0517 <khang17122005@gmail.com>` with no remote git pushes permitted until formal sign-off.
