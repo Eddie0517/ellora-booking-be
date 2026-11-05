@@ -1,0 +1,17 @@
+# ---- Spec Kit local state ----
+# Per-machine developer handle used to name specs/<owner>-<NNN>-<slug>.
+# Each developer fills their own; it must never be committed.
+.specify/owner.json
+
+# ---- Node (agent tooling safety net) ----
+node_modules/
+.opencode/package.json
+.opencode/package-lock.json
+.opencode/bun.lock
+
+# ---- OS noise ----
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.orig
+*.rej
