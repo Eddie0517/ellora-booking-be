@@ -64,17 +64,17 @@
 
 ### Implementation for User Story 2
 
-- [ ] T014 [P] [US2] Create domain module descriptor in `ellora-domain/pom.xml` with zero framework dependencies (JDK 17 only)
-- [ ] T015 [P] [US2] Create domain base packages and markers in `ellora-domain/src/main/java/com/ellora/domain/model/` and `ellora-domain/src/main/java/com/ellora/domain/exception/DomainException.java`
-- [ ] T016 [P] [US2] Create application module descriptor in `ellora-application/pom.xml` depending only on `ellora-domain`
-- [ ] T017 [P] [US2] Create application common DTOs in `ellora-application/src/main/java/com/ellora/application/common/dto/PagedResult.java`
-- [ ] T018 [P] [US2] Create application port interfaces in `ellora-application/src/main/java/com/ellora/application/common/port/MailSender.java` and `ImageStorage.java`
-- [ ] T019 [P] [US2] Create infrastructure module descriptor in `ellora-infrastructure/pom.xml` depending on `ellora-application`, `ellora-domain`, Spring Data JPA, and Redis
-- [ ] T020 [P] [US2] Create API module descriptor in `ellora-api/pom.xml` depending on `ellora-application`, `ellora-infrastructure`, Spring Boot Web, and SpringDoc
-- [ ] T021 [US2] Create Spring Boot application entrypoint in `ellora-api/src/main/java/com/ellora/api/ElloraApplication.java`
-- [ ] T022 [P] [US2] Create architecture test module descriptor in `ellora-architecture-tests/pom.xml` with ArchUnit dependencies
-- [ ] T023 [US2] Implement domain layer architectural rules test in `ellora-architecture-tests/src/test/java/com/ellora/arch/DomainLayerRulesTest.java`
-- [ ] T024 [US2] Implement controller layer architectural rules test in `ellora-architecture-tests/src/test/java/com/ellora/arch/ControllerLayerRulesTest.java`
+- [x] T014 [P] [US2] Create domain module descriptor in `ellora-domain/pom.xml` with zero framework dependencies (JDK 17 only)
+- [x] T015 [P] [US2] Create domain base packages and markers in `ellora-domain/src/main/java/com/ellora/domain/model/` and `ellora-domain/src/main/java/com/ellora/domain/exception/DomainException.java`
+- [x] T016 [P] [US2] Create application module descriptor in `ellora-application/pom.xml` depending only on `ellora-domain`
+- [x] T017 [P] [US2] Create application common DTOs in `ellora-application/src/main/java/com/ellora/application/common/dto/PagedResult.java`
+- [x] T018 [P] [US2] Create application port interfaces in `ellora-application/src/main/java/com/ellora/application/common/port/MailSender.java` and `ImageStorage.java`
+- [x] T019 [P] [US2] Create infrastructure module descriptor in `ellora-infrastructure/pom.xml` depending on `ellora-application`, `ellora-domain`, Spring Data JPA, and Redis
+- [x] T020 [P] [US2] Create API module descriptor in `ellora-api/pom.xml` depending on `ellora-application`, `ellora-infrastructure`, Spring Boot Web, and SpringDoc
+- [x] T021 [US2] Create Spring Boot application entrypoint in `ellora-api/src/main/java/com/ellora/api/ElloraApplication.java`
+- [x] T022 [P] [US2] Create architecture test module descriptor in `ellora-architecture-tests/pom.xml` with ArchUnit dependencies
+- [x] T023 [US2] Implement domain layer architectural rules test in `ellora-architecture-tests/src/test/java/com/ellora/arch/DomainLayerRulesTest.java`
+- [x] T024 [US2] Implement controller layer architectural rules test in `ellora-architecture-tests/src/test/java/com/ellora/arch/ControllerLayerRulesTest.java`
 
 **Checkpoint**: 4-module Clean Architecture skeleton compiles and ArchUnit passes 100% inside container.
 

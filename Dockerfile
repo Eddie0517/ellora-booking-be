@@ -36,6 +36,10 @@ COPY --from=build /usr/share/maven /usr/share/maven
 RUN ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
 COPY --from=build /opt/java/openjdk /opt/java/openjdk
 
+# Provide entrypoint script for flexible CLI commands (e.g. docker compose run --rm backend mvn ...)
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Copy compiled application fat JAR from build stage
 COPY --from=build --chown=ellora:ellora /build/ellora-api/target/*.jar /app/app.jar
 
@@ -44,4 +48,5 @@ USER ellora:ellora
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+CMD ["java", "-jar", "/app/app.jar"]
