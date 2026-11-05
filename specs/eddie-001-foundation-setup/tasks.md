@@ -105,12 +105,12 @@
 
 ### Implementation for User Story 4
 
-- [ ] T029 [P] [US4] Configure SpringDoc OpenAPI bean and security scheme in `ellora-api/src/main/java/com/ellora/api/config/OpenApiConfig.java`
-- [ ] T030 [P] [US4] Implement global RFC 9457 Problem Details exception handler in `ellora-api/src/main/java/com/ellora/api/exception/GlobalExceptionHandler.java`
-- [ ] T031 [P] [US4] Implement system liveness controller in `ellora-api/src/main/java/com/ellora/api/controller/HealthController.java` exposing `GET /healthz`
-- [ ] T032 [US4] Create automated OpenAPI specification export script in `scripts/export-openapi.ps1`
-- [ ] T033 [US4] Export and synchronize live schema into root `contracts/openapi.json`
-- [ ] T034 [US4] Create frontend handoff guide in `specs/eddie-001-foundation-setup/frontend-guide.md` based on `.specify/templates/frontend-guide-template.md`
+- [x] T029 [P] [US4] Configure SpringDoc OpenAPI bean and security scheme in `ellora-api/src/main/java/com/ellora/api/config/OpenApiConfig.java`
+- [x] T030 [P] [US4] Implement global RFC 9457 Problem Details exception handler in `ellora-api/src/main/java/com/ellora/api/exception/GlobalExceptionHandler.java`
+- [x] T031 [P] [US4] Implement system liveness controller in `ellora-api/src/main/java/com/ellora/api/controller/HealthController.java` exposing `GET /healthz`
+- [x] T032 [US4] Create automated OpenAPI specification export script in `scripts/export-openapi.ps1`
+- [x] T033 [US4] Export and synchronize live schema into root `contracts/openapi.json`
+- [x] T034 [US4] Create frontend handoff guide in `specs/eddie-001-foundation-setup/frontend-guide.md` based on `.specify/templates/frontend-guide-template.md`
 
 **Checkpoint**: OpenAPI specification and frontend guide are up to date and verifiable.
 
