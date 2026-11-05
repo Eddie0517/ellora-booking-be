@@ -88,10 +88,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T025 [US3] Consolidate 13 legacy SQL scripts into Flyway baseline migration in `ellora-api/src/main/resources/db/migration/V1__baseline_schema.sql`
-- [ ] T026 [P] [US3] Create base application configuration in `ellora-api/src/main/resources/application.yml` setting `spring.jpa.hibernate.ddl-auto=none` and enabling Flyway
-- [ ] T027 [P] [US3] Create local profile configuration in `ellora-api/src/main/resources/application-local.yml` binding container database, redis, and mailpit URLs
-- [ ] T028 [US3] Execute Flyway migration verification against PostgreSQL container and assert 21 tables created
+- [x] T025 [US3] Consolidate 13 legacy SQL scripts into Flyway baseline migration in `ellora-api/src/main/resources/db/migration/V1__baseline_schema.sql`
+- [x] T026 [P] [US3] Create base application configuration in `ellora-api/src/main/resources/application.yml` setting `spring.jpa.hibernate.ddl-auto=none` and enabling Flyway
+- [x] T027 [P] [US3] Create local profile configuration in `ellora-api/src/main/resources/application-local.yml` binding container database, redis, and mailpit URLs
+- [x] T028 [US3] Execute Flyway migration verification against PostgreSQL container and assert 21 tables created
 
 **Checkpoint**: Database baseline is versioned and applied deterministically on startup.
 
