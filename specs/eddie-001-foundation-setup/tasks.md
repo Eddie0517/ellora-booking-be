@@ -31,9 +31,9 @@
 
 **Purpose**: Establish the zero-host-Java containerized runtime and compose orchestration that blocks all subsequent application work.
 
-- [ ] T007 Create declarative container stack in `docker-compose.yml` defining `postgres`, `redis`, `mailpit`, `pgadmin` (`tools` profile), and `backend` services
-- [ ] T008 Create multi-stage container build file in `Dockerfile` using `maven:3.9-eclipse-temurin-17-alpine` (build stage) and `eclipse-temurin:17-jre-alpine` (runtime stage)
-- [ ] T009 Create parent Maven POM in `pom.xml` managing packaging, plugin versions (compiler, surefire, spotless), and dependencies (Spring Boot 3.2.5, Lombok, MapStruct, ArchUnit, SpringDoc)
+- [x] T007 Create declarative container stack in `docker-compose.yml` defining `postgres`, `redis`, `mailpit`, `pgadmin` (`tools` profile), and `backend` services
+- [x] T008 Create multi-stage container build file in `Dockerfile` using `maven:3.9-eclipse-temurin-17-alpine` (build stage) and `eclipse-temurin:17-jre-alpine` (runtime stage)
+- [x] T009 Create parent Maven POM in `pom.xml` managing packaging, plugin versions (compiler, surefire, spotless), and dependencies (Spring Boot 3.2.5, Lombok, MapStruct, ArchUnit, SpringDoc)
 
 **Checkpoint**: Core container stack and parent build definition are verified runnable via `docker compose config`.
 
