@@ -1,0 +1,144 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Ellora Nail Salon Booking API",
+    "description": "API Documentation for Ellora Nail Salon Management and Booking System",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local Containerized Environment"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/healthz": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Liveness check",
+        "operationId": "healthz",
+        "responses": {
+          "200": {
+            "description": "System is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "ES256 signed JWT Bearer Token"
+      }
+    },
+    "schemas": {
+      "HealthStatus": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "UP"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["status", "timestamp"]
+      },
+      "ProblemDetail": {
+        "type": "object",
+        "description": "RFC 9457 Problem Details schema",
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://ellora.vn/errors/auth.invalid_credentials"
+          },
+          "title": {
+            "type": "string",
+            "example": "Thông tin xác thực không hợp lệ"
+          },
+          "status": {
+            "type": "integer",
+            "example": 401
+          },
+          "detail": {
+            "type": "string",
+            "example": "Email hoặc mật khẩu không chính xác."
+          },
+          "instance": {
+            "type": "string",
+            "example": "/api/auth/login"
+          },
+          "traceId": {
+            "type": "string",
+            "example": "c2b5e297-88eb-4209-906d-e4ebc52119c8"
+          },
+          "invalidParams": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvalidParam"
+            }
+          }
+        },
+        "required": ["type", "title", "status"]
+      },
+      "InvalidParam": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "email"
+          },
+          "reason": {
+            "type": "string",
+            "example": "Email không đúng định dạng RFC 5322"
+          }
+        },
+        "required": ["name", "reason"]
+      },
+      "PagedResult": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {}
+          },
+          "page": {
+            "type": "integer",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "example": 20
+          },
+          "totalItems": {
+            "type": "integer",
+            "example": 120
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 6
+          }
+        },
+        "required": ["items", "page", "pageSize", "totalItems", "totalPages"]
+      }
+    }
+  }
+}
