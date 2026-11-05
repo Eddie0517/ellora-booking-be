@@ -18,12 +18,12 @@
 
 **Purpose**: Initialize repository-level hygiene, Git rules, environment templates, and secrets handling.
 
-- [ ] T001 Create git ignore file in `.gitignore` ignoring `.env`, `target/`, `*.pem`, and build outputs
-- [ ] T002 [P] Create git attributes file in `.gitattributes` enforcing standard LF line endings (`* text=auto eol=lf`)
-- [ ] T003 [P] Create environment template in `.env.example` documenting all PostgreSQL, Redis, Mailpit, JWT, Cloudinary, and Google SMTP properties
-- [ ] T004 [P] Create active local environment file in `.env` populated with local development defaults and placeholders for real external keys
-- [ ] T005 [P] Create ES256 keypair generator script for Windows PowerShell in `scripts/jwt-keys.ps1`
-- [ ] T006 [P] Create ES256 keypair generator script for Linux/macOS in `scripts/jwt-keys.sh`
+- [x] T001 Create git ignore file in `.gitignore` ignoring `.env`, `target/`, `*.pem`, and build outputs
+- [x] T002 [P] Create git attributes file in `.gitattributes` enforcing standard LF line endings (`* text=auto eol=lf`)
+- [x] T003 [P] Create environment template in `.env.example` documenting all PostgreSQL, Redis, Mailpit, JWT, Cloudinary, and Google SMTP properties
+- [x] T004 [P] Create active local environment file in `.env` populated with local development defaults and placeholders for real external keys
+- [x] T005 [P] Create HS256 secret generator script for Windows PowerShell in `scripts/jwt-keys.ps1`
+- [x] T006 [P] Create HS256 secret generator script for Linux/macOS in `scripts/jwt-keys.sh`
 
 ---
 

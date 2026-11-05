@@ -12,7 +12,7 @@ Establish Phase P0 foundation for the Ellora backend refactor:
 3. Declarative `docker-compose.yml` managing PostgreSQL 17, Redis 7, Mailpit, PGAdmin (`tools`), and the `backend` service.
 4. Database baseline schema migration managed by Flyway (`V1__baseline_schema.sql`).
 5. Standardized OpenAPI specification (`contracts/openapi.json`) and automated export script for Frontend Agent/Dev handoff.
-6. Local cryptographic ES256 keypair generator script (`scripts/jwt-keys.ps1`).
+6. Local cryptographic HS256 secret generator script (`scripts/jwt-keys.ps1`).
 7. Strict local Git commit workflow (`Eddie0517 <khang17122005@gmail.com>`) with zero remote push.
 
 ## Technical Context
@@ -78,8 +78,8 @@ ellora-booking-be/
 │   ├── README.md                         # OpenAPI contract documentation & Angular codegen
 │   └── openapi.json                      # Single source of truth OpenAPI 3.0 spec
 ├── scripts/
-│   ├── jwt-keys.ps1                      # ES256 P-256 keypair generator (PowerShell)
-│   ├── jwt-keys.sh                       # ES256 P-256 keypair generator (Bash)
+│   ├── jwt-keys.ps1                      # HS256 secret generator (PowerShell)
+│   ├── jwt-keys.sh                       # HS256 secret generator (Bash)
 │   └── export-openapi.ps1                # Automated OpenAPI dump script
 ├── ellora-domain/                        # Pure Java 17 (0 framework dependencies)
 │   ├── pom.xml
@@ -138,5 +138,5 @@ ellora-booking-be/
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |---|---|---|
 | **4 Maven Modules instead of 1** | Strict compile-time and packaging enforcement of Clean Architecture (Domain isolation) | Single JAR package-private visibility is easily bypassed by team members over time. |
-| **ES256 Token Signing** | Self-managed asymmetric JWT architecture with key rotation support (`kid`) | Symmetric HS256 exposes the signing secret to any verifying service or adapter. |
+| **HS256 Token Signing** | Lightweight symmetric signing using standard 256-bit secret string for monolith architecture | Asymmetric ES256 adds key pair management overhead not required for single monolith deployment. |
 | **Problem Details RFC 9457** | Global standard error representation consumable by OpenAPI generators and frontend clients | Custom `ApiResponse<T>` envelope adds boilerplate and violates RFC HTTP status standards. |

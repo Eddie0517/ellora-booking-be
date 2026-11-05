@@ -85,21 +85,21 @@ Do not install JDK or Maven on the host machine. Instead:
 
 ---
 
-## 5. ES256 Keypair Generation Script
+## 5. HS256 Secret Generation & Token Signing
 
 ### Decision
-Provide `scripts/jwt-keys.ps1` (Windows PowerShell) and `scripts/jwt-keys.sh` (Linux/bash) using Java/OpenSSL to:
-1. Generate an ECDSA P-256 (prime256v1) key pair.
-2. Output one-line base64-encoded PKCS#8 PEM for `JWT_PRIVATE_KEY` and SPKI PEM for `JWT_PUBLIC_KEY` directly to standard output.
-3. Never write private key files to disk.
+Use HMAC-SHA256 (HS256) for token signing with a shared secret string (`JWT_SECRET`) of at least 256 bits (32 bytes). Do NOT include `kid` in the JWT protected header for the current phase.
+Provide `scripts/jwt-keys.ps1` (PowerShell) and `scripts/jwt-keys.sh` (Bash) to:
+1. Generate a cryptographically secure 256-bit (32-byte) random secret encoded in base64 or hex.
+2. Output the generated `JWT_SECRET` directly to standard output.
+3. Avoid persisting secrets to version control.
 
 ### Rationale
-- ES256 tokens are compact, fast to sign/verify, and comply with ADR 001/002.
-- Printing base64 to terminal allows developers to copy-paste directly into local `.env` without accidentally committing secret PEM files to Git.
+- High performance, lightweight implementation well-suited for a single monolithic Spring Boot service.
+- Drastically simplifies token issuing and validation without managing public/private key pairs or header key ID rotation complexity at this stage.
 
 ### Alternatives Considered
-- **HMAC-SHA256 (HS256)**: Shared symmetric secret; if multiple services read tokens later, private key is exposed to verifiers. ES256 allows verifiers to hold only the public key.
-- **RS256**: Key sizes are significantly larger (2048+ bits), generating larger JWT headers/payloads with higher CPU overhead than ECC P-256.
+- **ES256 (Asymmetric P-256)**: Stronger for multi-service verification where verifiers should not hold the private key, but adds unnecessary complexity (PEM formats, SPKI, key rotation headers) for the current monolith scope.
 
 ---
 

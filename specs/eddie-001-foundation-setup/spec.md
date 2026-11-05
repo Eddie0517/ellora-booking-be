@@ -15,6 +15,7 @@
 - Q: Môi trường chạy và quản lý toolchain Java/Maven cho backend? → A: Không cài đặt JDK/Maven trực tiếp lên máy host. Sử dụng Docker hoàn toàn: pull image chính thức của Java 17 (Eclipse Temurin) và Maven; toàn bộ quy trình biên dịch, kiểm thử, chạy server backend và database migrations đều vận hành 100% bên trong Docker container.
 - Q: Đối với các dịch vụ bên ngoài (gửi mail và lưu trữ ảnh Cloudinary), bạn muốn thiết lập trong môi trường local và bộ test như thế nào? → A: Cấu hình sẵn sàng và yêu cầu cung cấp ngay thông tin tài khoản Cloudinary thật và Google SMTP App Password thật trong file .env local ngay từ Phase P0, có tài liệu hướng dẫn và ghi chú rõ ràng các key thật cần điền.
 - Q: Mô hình vận hành docker-compose cho backend khi phát triển và kiểm thử ở local nên được cấu hình theo hướng nào? → A: docker-compose quản lý toàn bộ stack dịch vụ bao gồm PostgreSQL 17, Redis 7, Mailpit, PGAdmin (profile tools) và service `backend` chạy ứng dụng Spring Boot (multi-stage Dockerfile dựa trên image Temurin Java 17 / Maven), đảm bảo BE chạy hoàn toàn trong Docker.
+- Q: Thuật toán ký và quản lý token JWT? → A: Sử dụng thuật toán HMAC-SHA256 (HS256) với chuỗi bí mật JWT_SECRET (tối thiểu 256 bits / 32 bytes ngẫu nhiên bảo mật) và không sử dụng trường 'kid' trong header cho giai đoạn hiện tại.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -108,7 +109,7 @@ As a maintainer refactoring legacy services, I need a comprehensive characteriza
 - **FR-004**: System MUST enforce via automated architectural tests that the `ellora-domain` module contains zero external framework dependencies (specifically no Spring, JPA, or serialization libraries).
 - **FR-005**: System MUST enforce via automated architectural tests that API controllers do not directly reference persistence entities, database managers, or persistence repositories.
 - **FR-006**: System MUST provide a baseline database migration script (`V1__baseline_schema.sql`) consolidating all existing legacy tables, constraints, and indexes.
-- **FR-007**: System MUST generate an ES256 cryptographic key pair on demand via dedicated scripts for local testing without persisting private keys to disk.
+- **FR-007**: System MUST generate a secure random HMAC-SHA256 (HS256) secret string on demand via dedicated scripts for local testing without storing secrets in version control.
 - **FR-008**: System MUST export an OpenAPI 3 specification artifact to `contracts/openapi.json` reflecting live endpoint definitions and Problem Details schemas.
 - **FR-009**: System MUST provide a feature-level `frontend-guide.md` template facilitating API and DTO handoff to frontend engineers and agents.
 - **FR-010**: System MUST maintain automated characterization test coverage for the 8 core user journeys prior to refactoring individual business modules.
