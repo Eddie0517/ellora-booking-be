@@ -1,69 +1,69 @@
 package com.ellora.application.feature.auth;
 
+import com.ellora.application.common.port.MailSender;
 import com.ellora.application.common.port.PasswordHasher;
+import com.ellora.application.common.port.PendingRegistrationStore;
 import com.ellora.application.common.port.TokenProvider;
 import com.ellora.application.feature.auth.dto.RegisterRequest;
-import com.ellora.application.feature.auth.dto.TokenResponse;
-import com.ellora.application.feature.auth.dto.UserProfileResponse;
+import com.ellora.application.feature.auth.dto.RegisterResponse;
+import com.ellora.application.feature.auth.model.PendingRegistration;
 import com.ellora.domain.exception.BusinessRuleException;
-import com.ellora.domain.model.RefreshToken;
-import com.ellora.domain.model.User;
-import com.ellora.domain.repository.RefreshTokenRepository;
 import com.ellora.domain.repository.UserRepository;
+import java.security.SecureRandom;
+import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.UUID;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class RegisterUserUseCase {
 
+    private static final Duration PENDING_REGISTRATION_TTL = Duration.ofMinutes(15);
+
     private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final PendingRegistrationStore pendingRegistrationStore;
     private final PasswordHasher passwordHasher;
     private final TokenProvider tokenProvider;
+    private final MailSender mailSender;
+    private final SecureRandom secureRandom = new SecureRandom();
 
-    @Transactional
-    public TokenResponse execute(RegisterRequest request) {
+    public RegisterResponse execute(RegisterRequest request) {
         String normalizedEmail = request.email().toLowerCase().trim();
         if (userRepository.existsByEmail(normalizedEmail)) {
             throw new BusinessRuleException("EMAIL_ALREADY_EXISTS", "Email này đã được đăng ký trong hệ thống");
         }
 
         String passwordHash = passwordHasher.hash(request.password());
-        User newUser = User.createNewCustomer(normalizedEmail, passwordHash, request.fullName(), request.phone());
-        User savedUser = userRepository.save(newUser);
 
-        UUID familyId = UUID.randomUUID();
-        String accessToken = tokenProvider.generateAccessToken(savedUser.getId(), savedUser.getEmail(), savedUser.getRole().name());
-        String refreshTokenString = tokenProvider.generateRefreshToken(savedUser.getId(), familyId);
-        String tokenHash = tokenProvider.hashToken(refreshTokenString);
+        // Generate 6-digit OTP code
+        String otp = String.format("%06d", secureRandom.nextInt(1_000_000));
+        String otpHash = tokenProvider.hashToken(otp);
 
-        RefreshToken refreshToken = new RefreshToken(
-                UUID.randomUUID(),
-                savedUser.getId(),
-                tokenHash,
-                familyId,
-                Instant.now().plus(7, ChronoUnit.DAYS),
-                null,
-                null,
+        // Store pending registration in Redis (supports overwrite on re-register)
+        PendingRegistration pendingRegistration = new PendingRegistration(
+                normalizedEmail,
+                passwordHash,
+                request.fullName() != null ? request.fullName().trim() : null,
+                request.phone() != null ? request.phone().trim() : null,
+                otpHash,
+                0,
                 Instant.now()
         );
-        refreshTokenRepository.save(refreshToken);
+        pendingRegistrationStore.save(pendingRegistration, PENDING_REGISTRATION_TTL);
 
-        UserProfileResponse profile = new UserProfileResponse(
-                savedUser.getId(),
-                savedUser.getEmail(),
-                savedUser.getFullName(),
-                savedUser.getPhone(),
-                savedUser.getAvatarUrl(),
-                savedUser.getRole().name(),
-                savedUser.getEmailVerifiedAt() != null
+        // Send OTP verification email
+        mailSender.sendHtml(
+                normalizedEmail,
+                "Mã xác thực tài khoản Ellora Booking",
+                "verify-email",
+                Map.of(
+                        "message", "Cảm ơn bạn đã đăng ký tài khoản tại Ellora Booking. Mã xác thực (OTP) của bạn là:",
+                        "code", otp
+                )
         );
 
-        return TokenResponse.of(accessToken, refreshTokenString, 900, profile);
+        return RegisterResponse.of(normalizedEmail);
     }
 }

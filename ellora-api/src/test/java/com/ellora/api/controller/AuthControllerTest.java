@@ -1,6 +1,7 @@
 package com.ellora.api.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -10,10 +11,15 @@ import com.ellora.application.feature.auth.GetCurrentUserUseCase;
 import com.ellora.application.feature.auth.LoginUserUseCase;
 import com.ellora.application.feature.auth.RefreshTokenUseCase;
 import com.ellora.application.feature.auth.RegisterUserUseCase;
+import com.ellora.application.feature.auth.ResendVerificationUseCase;
+import com.ellora.application.feature.auth.VerifyEmailUseCase;
 import com.ellora.application.feature.auth.dto.LoginRequest;
 import com.ellora.application.feature.auth.dto.RegisterRequest;
+import com.ellora.application.feature.auth.dto.RegisterResponse;
+import com.ellora.application.feature.auth.dto.ResendVerificationRequest;
 import com.ellora.application.feature.auth.dto.TokenResponse;
 import com.ellora.application.feature.auth.dto.UserProfileResponse;
+import com.ellora.application.feature.auth.dto.VerifyEmailRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -41,6 +47,12 @@ class AuthControllerTest {
     private RegisterUserUseCase registerUserUseCase;
 
     @MockBean
+    private VerifyEmailUseCase verifyEmailUseCase;
+
+    @MockBean
+    private ResendVerificationUseCase resendVerificationUseCase;
+
+    @MockBean
     private LoginUserUseCase loginUserUseCase;
 
     @MockBean
@@ -50,14 +62,11 @@ class AuthControllerTest {
     private GetCurrentUserUseCase getCurrentUserUseCase;
 
     @Test
-    @DisplayName("POST /api/v1/auth/register should return 201 Created and TokenResponse")
+    @DisplayName("POST /api/v1/auth/register should return 201 Created and RegisterResponse")
     void shouldRegisterSuccessfully() throws Exception {
-        UUID userId = UUID.randomUUID();
-        UserProfileResponse profile = new UserProfileResponse(
-                userId, "test@example.com", "Test User", "0900000000", null, "CUSTOMER", false);
-        TokenResponse tokenResponse = TokenResponse.of("mock-access-token", "mock-refresh-token", 900, profile);
+        RegisterResponse registerResponse = RegisterResponse.of("test@example.com");
 
-        when(registerUserUseCase.execute(any(RegisterRequest.class))).thenReturn(tokenResponse);
+        when(registerUserUseCase.execute(any(RegisterRequest.class))).thenReturn(registerResponse);
 
         RegisterRequest request = new RegisterRequest("test@example.com", "password123", "Test User", "0900000000");
 
@@ -65,9 +74,44 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.email").value("test@example.com"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/auth/verify-email should return 200 OK and TokenResponse")
+    void shouldVerifyEmailSuccessfully() throws Exception {
+        UUID userId = UUID.randomUUID();
+        UserProfileResponse profile = new UserProfileResponse(
+                userId, "test@example.com", "Test User", "0900000000", null, "CUSTOMER", true);
+        TokenResponse tokenResponse = TokenResponse.of("mock-access-token", "mock-refresh-token", 900, profile);
+
+        when(verifyEmailUseCase.execute(any(VerifyEmailRequest.class))).thenReturn(tokenResponse);
+
+        VerifyEmailRequest request = new VerifyEmailRequest("test@example.com", "123456");
+
+        mockMvc.perform(post("/api/v1/auth/verify-email")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").value("mock-access-token"))
                 .andExpect(jsonPath("$.tokenType").value("Bearer"))
-                .andExpect(jsonPath("$.user.email").value("test@example.com"));
+                .andExpect(jsonPath("$.user.email").value("test@example.com"))
+                .andExpect(jsonPath("$.user.emailVerified").value(true));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/auth/resend-verification should return 200 OK")
+    void shouldResendVerificationSuccessfully() throws Exception {
+        doNothing().when(resendVerificationUseCase).execute(any(ResendVerificationRequest.class));
+
+        ResendVerificationRequest request = new ResendVerificationRequest("test@example.com");
+
+        mockMvc.perform(post("/api/v1/auth/resend-verification")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").isNotEmpty());
     }
 
     @Test
@@ -75,7 +119,7 @@ class AuthControllerTest {
     void shouldLoginSuccessfully() throws Exception {
         UUID userId = UUID.randomUUID();
         UserProfileResponse profile = new UserProfileResponse(
-                userId, "test@example.com", "Test User", "0900000000", null, "CUSTOMER", false);
+                userId, "test@example.com", "Test User", "0900000000", null, "CUSTOMER", true);
         TokenResponse tokenResponse = TokenResponse.of("mock-access-token", "mock-refresh-token", 900, profile);
 
         when(loginUserUseCase.execute(any(LoginRequest.class))).thenReturn(tokenResponse);

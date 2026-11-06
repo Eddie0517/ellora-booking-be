@@ -6,16 +6,22 @@ import com.ellora.application.feature.auth.LoginUserUseCase;
 import com.ellora.application.feature.auth.LogoutUserUseCase;
 import com.ellora.application.feature.auth.RefreshTokenUseCase;
 import com.ellora.application.feature.auth.RegisterUserUseCase;
+import com.ellora.application.feature.auth.ResendVerificationUseCase;
+import com.ellora.application.feature.auth.VerifyEmailUseCase;
 import com.ellora.application.feature.auth.dto.ChangePasswordRequest;
 import com.ellora.application.feature.auth.dto.LoginRequest;
 import com.ellora.application.feature.auth.dto.RefreshTokenRequest;
 import com.ellora.application.feature.auth.dto.RegisterRequest;
+import com.ellora.application.feature.auth.dto.RegisterResponse;
+import com.ellora.application.feature.auth.dto.ResendVerificationRequest;
 import com.ellora.application.feature.auth.dto.TokenResponse;
 import com.ellora.application.feature.auth.dto.UserProfileResponse;
+import com.ellora.application.feature.auth.dto.VerifyEmailRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,10 +37,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-@Tag(name = "Authentication", description = "Endpoints for user registration, authentication and token refresh")
+@Tag(name = "Authentication", description = "Endpoints for user registration, OTP email verification, authentication and token refresh")
 public class AuthController {
 
     private final RegisterUserUseCase registerUserUseCase;
+    private final VerifyEmailUseCase verifyEmailUseCase;
+    private final ResendVerificationUseCase resendVerificationUseCase;
     private final LoginUserUseCase loginUserUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
     private final GetCurrentUserUseCase getCurrentUserUseCase;
@@ -42,14 +50,28 @@ public class AuthController {
     private final ChangePasswordUseCase changePasswordUseCase;
 
     @PostMapping("/register")
-    @Operation(summary = "Customer registration", description = "Registers a new customer account and returns JWT credentials")
-    public ResponseEntity<TokenResponse> register(@Valid @RequestBody RegisterRequest request) {
-        TokenResponse response = registerUserUseCase.execute(request);
+    @Operation(summary = "Customer registration", description = "Registers a new customer account and sends 6-digit OTP verification email")
+    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
+        RegisterResponse response = registerUserUseCase.execute(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PostMapping("/verify-email")
+    @Operation(summary = "Verify email with OTP", description = "Verifies customer email with 6-digit OTP code and returns initial JWT credentials")
+    public ResponseEntity<TokenResponse> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+        TokenResponse response = verifyEmailUseCase.execute(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/resend-verification")
+    @Operation(summary = "Resend email verification OTP", description = "Generates and sends a new 6-digit OTP code to the user's email")
+    public ResponseEntity<Map<String, String>> resendVerification(@Valid @RequestBody ResendVerificationRequest request) {
+        resendVerificationUseCase.execute(request);
+        return ResponseEntity.ok(Map.of("message", "Mã xác thực mới đã được gửi tới email của bạn."));
+    }
+
     @PostMapping("/login")
-    @Operation(summary = "User login", description = "Authenticates credentials and returns access & refresh tokens")
+    @Operation(summary = "User login", description = "Authenticates credentials and returns access & refresh tokens (requires verified email)")
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
         TokenResponse response = loginUserUseCase.execute(request);
         return ResponseEntity.ok(response);

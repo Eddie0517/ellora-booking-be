@@ -1,8 +1,10 @@
 package com.ellora.infrastructure.persistence.mapper;
 
 import com.ellora.domain.constant.Role;
+import com.ellora.domain.model.EmailVerificationToken;
 import com.ellora.domain.model.RefreshToken;
 import com.ellora.domain.model.User;
+import com.ellora.infrastructure.persistence.entity.EmailVerificationTokenEntity;
 import com.ellora.infrastructure.persistence.entity.RefreshTokenEntity;
 import com.ellora.infrastructure.persistence.entity.UserEntity;
 import org.springframework.stereotype.Component;
@@ -88,6 +90,38 @@ public class UserMapper {
                 .expiresAt(domain.getExpiresAt())
                 .revokedAt(domain.getRevokedAt())
                 .replacedById(domain.getReplacedById())
+                .createdAt(domain.getCreatedAt())
+                .build();
+    }
+
+    public EmailVerificationToken toDomain(EmailVerificationTokenEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+
+        return new EmailVerificationToken(
+                entity.getId(),
+                entity.getUserId(),
+                entity.getCodeHash(),
+                entity.getExpiresAt(),
+                entity.getConsumedAt(),
+                entity.getAttempts(),
+                entity.getCreatedAt()
+        );
+    }
+
+    public EmailVerificationTokenEntity toEntity(EmailVerificationToken domain) {
+        if (domain == null) {
+            return null;
+        }
+
+        return EmailVerificationTokenEntity.builder()
+                .id(domain.getId())
+                .userId(domain.getUserId())
+                .codeHash(domain.getCodeHash())
+                .expiresAt(domain.getExpiresAt())
+                .consumedAt(domain.getConsumedAt())
+                .attempts(domain.getAttempts())
                 .createdAt(domain.getCreatedAt())
                 .build();
     }

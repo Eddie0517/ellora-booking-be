@@ -20,7 +20,7 @@ public class GoogleSmtpMailSender implements MailSender {
 
     private final JavaMailSender javaMailSender;
 
-    @Value("${spring.mail.username:no-reply@ellora.vn}")
+    @Value("${app.mail.from:${spring.mail.username:no-reply@ellora.vn}}")
     private String fromEmail;
 
     @Override

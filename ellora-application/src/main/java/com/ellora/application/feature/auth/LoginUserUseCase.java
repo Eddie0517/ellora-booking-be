@@ -40,6 +40,10 @@ public class LoginUserUseCase {
             throw new BusinessRuleException("ACCOUNT_INACTIVE", "Tài khoản của bạn đã bị khóa hoặc chưa được kích hoạt");
         }
 
+        if (user.getEmailVerifiedAt() == null) {
+            throw new BusinessRuleException("EMAIL_NOT_VERIFIED", "Tài khoản chưa được xác thực email. Vui lòng xác thực mã OTP trước khi đăng nhập.");
+        }
+
         UUID familyId = UUID.randomUUID();
         String accessToken = tokenProvider.generateAccessToken(user.getId(), user.getEmail(), user.getRole().name());
         String refreshTokenString = tokenProvider.generateRefreshToken(user.getId(), familyId);

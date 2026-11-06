@@ -35,10 +35,15 @@ public class SecurityConfig {
                                 "/actuator/**",
                                 "/test/**",
                                 "/api/v1/auth/register",
+                                "/api/v1/auth/verify-email",
+                                "/api/v1/auth/resend-verification",
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/refresh"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/salons/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/bookings").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/bookings/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/bookings/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
