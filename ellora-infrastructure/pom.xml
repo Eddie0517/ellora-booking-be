@@ -32,6 +32,12 @@
             <artifactId>spring-security-crypto</artifactId>
         </dependency>
 
+        <!-- Jackson for JSON processing in TokenProvider -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
         <!-- Spring Data JPA & Persistence -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -42,6 +48,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!-- Spring Mail (Google SMTP) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
         <!-- PostgreSQL JDBC Driver -->

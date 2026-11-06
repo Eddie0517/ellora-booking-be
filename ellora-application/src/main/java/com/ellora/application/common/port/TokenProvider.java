@@ -19,4 +19,6 @@ public interface TokenProvider {
     String getRoleFromToken(String token);
 
     Instant getExpirationFromToken(String token);
+
+    String hashToken(String token);
 }

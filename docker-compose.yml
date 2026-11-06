@@ -73,6 +73,7 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:4200}
       API_BASE_URL: ${API_BASE_URL:-http://localhost:8080}
     volumes:
+      - .:/app
       - backend_m2:/root/.m2
     depends_on:
       postgres:

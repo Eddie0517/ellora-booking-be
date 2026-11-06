@@ -43,11 +43,12 @@ public class LoginUserUseCase {
         UUID familyId = UUID.randomUUID();
         String accessToken = tokenProvider.generateAccessToken(user.getId(), user.getEmail(), user.getRole().name());
         String refreshTokenString = tokenProvider.generateRefreshToken(user.getId(), familyId);
+        String tokenHash = tokenProvider.hashToken(refreshTokenString);
 
         RefreshToken refreshToken = new RefreshToken(
                 UUID.randomUUID(),
                 user.getId(),
-                refreshTokenString,
+                tokenHash,
                 familyId,
                 Instant.now().plus(7, ChronoUnit.DAYS),
                 null,

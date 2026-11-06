@@ -1,9 +1,12 @@
 package com.ellora.api.controller;
 
+import com.ellora.application.feature.auth.ChangePasswordUseCase;
 import com.ellora.application.feature.auth.GetCurrentUserUseCase;
 import com.ellora.application.feature.auth.LoginUserUseCase;
+import com.ellora.application.feature.auth.LogoutUserUseCase;
 import com.ellora.application.feature.auth.RefreshTokenUseCase;
 import com.ellora.application.feature.auth.RegisterUserUseCase;
+import com.ellora.application.feature.auth.dto.ChangePasswordRequest;
 import com.ellora.application.feature.auth.dto.LoginRequest;
 import com.ellora.application.feature.auth.dto.RefreshTokenRequest;
 import com.ellora.application.feature.auth.dto.RegisterRequest;
@@ -21,6 +24,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,6 +38,8 @@ public class AuthController {
     private final LoginUserUseCase loginUserUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
     private final GetCurrentUserUseCase getCurrentUserUseCase;
+    private final LogoutUserUseCase logoutUserUseCase;
+    private final ChangePasswordUseCase changePasswordUseCase;
 
     @PostMapping("/register")
     @Operation(summary = "Customer registration", description = "Registers a new customer account and returns JWT credentials")
@@ -62,5 +68,27 @@ public class AuthController {
     public ResponseEntity<UserProfileResponse> getCurrentUser(@AuthenticationPrincipal UUID userId) {
         UserProfileResponse profile = getCurrentUserUseCase.execute(userId);
         return ResponseEntity.ok(profile);
+    }
+
+    @PostMapping("/logout")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "User logout", description = "Revokes refresh tokens and blacklists the current access token")
+    public ResponseEntity<Void> logout(
+            @AuthenticationPrincipal UUID userId,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestBody(required = false) RefreshTokenRequest request) {
+        String refreshToken = request != null ? request.refreshToken() : null;
+        logoutUserUseCase.execute(userId, authHeader, refreshToken);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/change-password")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Change password", description = "Changes password for authenticated user and revokes active sessions")
+    public ResponseEntity<Void> changePassword(
+            @AuthenticationPrincipal UUID userId,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        changePasswordUseCase.execute(userId, request);
+        return ResponseEntity.noContent().build();
     }
 }

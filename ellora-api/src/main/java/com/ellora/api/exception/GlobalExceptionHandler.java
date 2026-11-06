@@ -75,8 +75,8 @@ public class GlobalExceptionHandler {
 
         ProblemDetail problemDetail =
                 ProblemDetail.forStatusAndDetail(status, ex.getMessage());
-        problemDetail.setType(URI.create("https://ellora.vn/errors/" + (ex.getErrorCode() != null ? ex.getErrorCode().toLowerCase() : "business-rule-violation")));
-        problemDetail.setTitle(status == HttpStatus.UNAUTHORIZED ? "Thông tin xác thực không hợp lệ" : "Vi phạm quy tắc nghiệp vụ");
+        problemDetail.setType(URI.create("https://ellora.vn/errors/business-rule-violation"));
+        problemDetail.setTitle("Vi phạm quy tắc nghiệp vụ");
         problemDetail.setInstance(URI.create(request.getRequestURI()));
         problemDetail.setProperty("traceId", UUID.randomUUID().toString());
 

@@ -42,6 +42,7 @@ public class Hs256TokenProvider implements TokenProvider {
         Instant exp = now.plusSeconds(accessExpirationSeconds);
 
         ObjectNode payload = objectMapper.createObjectNode()
+                .put("jti", UUID.randomUUID().toString())
                 .put("sub", userId.toString())
                 .put("email", email)
                 .put("role", role)
@@ -59,6 +60,7 @@ public class Hs256TokenProvider implements TokenProvider {
         Instant exp = now.plusSeconds(refreshExpirationSeconds);
 
         ObjectNode payload = objectMapper.createObjectNode()
+                .put("jti", UUID.randomUUID().toString())
                 .put("sub", userId.toString())
                 .put("familyId", familyId != null ? familyId.toString() : UUID.randomUUID().toString())
                 .put("type", "REFRESH")
@@ -122,6 +124,28 @@ public class Hs256TokenProvider implements TokenProvider {
             return Instant.ofEpochSecond(exp);
         } catch (Exception e) {
             return Instant.now();
+        }
+    }
+
+    @Override
+    public String hashToken(String token) {
+        if (token == null) {
+            return null;
+        }
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(token.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to calculate SHA-256 hash", e);
         }
     }
 

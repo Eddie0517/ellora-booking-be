@@ -31,7 +31,8 @@ public class RefreshTokenUseCase {
             throw new BusinessRuleException("INVALID_REFRESH_TOKEN", "Mã refresh token không hợp lệ hoặc đã hết hạn");
         }
 
-        RefreshToken existingToken = refreshTokenRepository.findByTokenHash(tokenString)
+        String tokenHash = tokenProvider.hashToken(tokenString);
+        RefreshToken existingToken = refreshTokenRepository.findByTokenHash(tokenHash)
                 .orElseThrow(() -> new BusinessRuleException("INVALID_REFRESH_TOKEN", "Mã refresh token không tồn tại"));
 
         if (!existingToken.isValid()) {
@@ -48,13 +49,15 @@ public class RefreshTokenUseCase {
 
         UUID newId = UUID.randomUUID();
         String newRefreshTokenString = tokenProvider.generateRefreshToken(user.getId(), existingToken.getFamilyId());
+        String newTokenHash = tokenProvider.hashToken(newRefreshTokenString);
+
         existingToken.revoke(newId);
         refreshTokenRepository.save(existingToken);
 
         RefreshToken newToken = new RefreshToken(
                 newId,
                 user.getId(),
-                newRefreshTokenString,
+                newTokenHash,
                 existingToken.getFamilyId(),
                 Instant.now().plus(7, ChronoUnit.DAYS),
                 null,

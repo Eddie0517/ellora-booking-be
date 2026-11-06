@@ -22,7 +22,7 @@ class FlywayMigrationTest {
     private DataSource dataSource;
 
     @Test
-    @DisplayName("Verify Flyway migration executes and creates all 21 core baseline tables")
+    @DisplayName("Verify Flyway migration executes and creates all schema tables")
     void shouldExecuteFlywayMigrationAndCreateAll21Tables() throws Exception {
         Set<String> expectedTables = Set.of(
                 "users",
@@ -45,7 +45,10 @@ class FlywayMigrationTest {
                 "platform_billing_settings",
                 "platform_fee_policies",
                 "platform_statements",
-                "platform_support_contacts");
+                "platform_support_contacts",
+                "refresh_tokens",
+                "email_verification_tokens",
+                "password_reset_tokens");
 
         Set<String> actualTables = new HashSet<>();
         try (Connection conn = dataSource.getConnection();
@@ -58,7 +61,7 @@ class FlywayMigrationTest {
             }
         }
 
-        assertEquals(21, actualTables.size(), "Should have exactly 21 tables created by Flyway baseline migration");
-        assertTrue(actualTables.containsAll(expectedTables), "Should contain all 21 expected core baseline tables");
+        assertEquals(24, actualTables.size(), "Should have exactly 24 tables created by Flyway migrations");
+        assertTrue(actualTables.containsAll(expectedTables), "Should contain all 24 expected tables");
     }
 }

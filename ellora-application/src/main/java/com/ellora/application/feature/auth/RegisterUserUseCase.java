@@ -40,11 +40,12 @@ public class RegisterUserUseCase {
         UUID familyId = UUID.randomUUID();
         String accessToken = tokenProvider.generateAccessToken(savedUser.getId(), savedUser.getEmail(), savedUser.getRole().name());
         String refreshTokenString = tokenProvider.generateRefreshToken(savedUser.getId(), familyId);
+        String tokenHash = tokenProvider.hashToken(refreshTokenString);
 
         RefreshToken refreshToken = new RefreshToken(
                 UUID.randomUUID(),
                 savedUser.getId(),
-                refreshTokenString,
+                tokenHash,
                 familyId,
                 Instant.now().plus(7, ChronoUnit.DAYS),
                 null,
