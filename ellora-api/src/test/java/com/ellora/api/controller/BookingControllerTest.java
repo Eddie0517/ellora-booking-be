@@ -2,7 +2,6 @@ package com.ellora.api.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -12,10 +11,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.ellora.application.feature.booking.CreateBookingUseCase;
 import com.ellora.application.feature.booking.GetBookingDetailsUseCase;
+import com.ellora.application.feature.booking.BookingAccessUseCase;
 import com.ellora.application.feature.booking.TransitionBookingStatusUseCase;
 import com.ellora.application.feature.booking.dto.BookingDetailsResponse;
 import com.ellora.application.feature.booking.dto.CreateBookingRequest;
 import com.ellora.application.feature.booking.dto.TransitionStatusRequest;
+import com.ellora.application.common.port.TokenProvider;
 import com.ellora.domain.exception.BusinessRuleException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
@@ -30,12 +31,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("local")
+@WithMockUser(roles = "CUSTOMER")
 class BookingControllerTest {
 
     @Autowired
@@ -44,6 +47,9 @@ class BookingControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private TokenProvider tokenProvider;
+
     @MockBean
     private CreateBookingUseCase createBookingUseCase;
 
@@ -51,29 +57,56 @@ class BookingControllerTest {
     private GetBookingDetailsUseCase getBookingDetailsUseCase;
 
     @MockBean
+    private BookingAccessUseCase bookingAccessUseCase;
+
+    @MockBean
     private TransitionBookingStatusUseCase transitionBookingStatusUseCase;
 
     @Test
-    @DisplayName("POST /api/v1/bookings should create guest booking with 201 Created")
-    void shouldCreateGuestBooking() throws Exception {
+    @DisplayName("POST /api/v1/bookings should create an authenticated customer's booking")
+    void shouldCreateCustomerBooking() throws Exception {
+        UUID customerId = UUID.randomUUID();
+        String token = tokenProvider.generateAccessToken(customerId, "customer@example.com", "CUSTOMER");
         Instant scheduledAt = Instant.now().plus(1, ChronoUnit.DAYS);
         CreateBookingRequest request = new CreateBookingRequest(
-                1L, 10L, null, scheduledAt, 45, "Guest note", "Guest Name", "guest@example.com", "0912345678");
+                1L, 10L, null, scheduledAt, 45, "Customer note", null, null, null);
 
         BookingDetailsResponse response = new BookingDetailsResponse(
-                100L, null, "Guest Name", "guest@example.com", "0912345678", 1L, 10L, null,
-                scheduledAt, 45, new BigDecimal("200000"), "PENDING", "Guest note", null, null, null, Instant.now(), Instant.now());
+                100L, customerId, "Customer Name", "customer@example.com", "0912345678", 1L, 10L, null,
+                scheduledAt, 45, new BigDecimal("200000"), "PENDING", "Customer note", null, null, null, Instant.now(), Instant.now());
 
-        when(createBookingUseCase.execute(isNull(), any(CreateBookingRequest.class))).thenReturn(response);
+        when(createBookingUseCase.execute(eq(customerId), any(CreateBookingRequest.class))).thenReturn(response);
 
         mockMvc.perform(post("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(100))
-                .andExpect(jsonPath("$.walkInName").value("Guest Name"))
+                .andExpect(jsonPath("$.customerId").value(customerId.toString()))
                 .andExpect(jsonPath("$.status").value("PENDING"))
                 .andExpect(jsonPath("$.servicePriceSnapshot").value(200000));
+    }
+
+    @Test
+    @WithAnonymousUser
+    @DisplayName("POST /api/v1/bookings should reject unauthenticated requests")
+    void shouldRejectUnauthenticatedBooking() throws Exception {
+        mockMvc.perform(post("/api/v1/bookings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/bookings should reject non-customer roles")
+    void shouldRejectOwnerBookingAsCustomer() throws Exception {
+        String ownerToken = tokenProvider.generateAccessToken(UUID.randomUUID(), "owner@example.com", "SALON_OWNER");
+        mockMvc.perform(post("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isForbidden());
     }
 
     @Test

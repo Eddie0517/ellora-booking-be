@@ -1,6 +1,7 @@
 package com.ellora.application.feature.owner;
 
 import com.ellora.application.feature.booking.dto.BookingDetailsResponse;
+import com.ellora.application.feature.booking.BookingResponseMapper;
 import com.ellora.domain.constant.BookingStatus;
 import com.ellora.domain.exception.BusinessRuleException;
 import com.ellora.domain.model.Booking;
@@ -19,6 +20,7 @@ public class GetOwnerBookingsUseCase {
 
     private final SalonRepository salonRepository;
     private final BookingRepository bookingRepository;
+    private final BookingResponseMapper responseMapper;
 
     @Transactional(readOnly = true)
     public List<BookingDetailsResponse> execute(UUID ownerId, String status) {
@@ -45,29 +47,6 @@ public class GetOwnerBookingsUseCase {
             bookings = bookingRepository.findBySalonId(salonId);
         }
 
-        return bookings.stream().map(this::mapToResponse).toList();
-    }
-
-    private BookingDetailsResponse mapToResponse(Booking b) {
-        return new BookingDetailsResponse(
-                b.getId(),
-                b.getCustomerId(),
-                b.getWalkInName(),
-                b.getGuestEmail(),
-                b.getWalkInPhone(),
-                b.getSalonId(),
-                b.getServiceId(),
-                b.getEmployeeId(),
-                b.getScheduledAt(),
-                b.getDurationMinutes(),
-                b.getServicePriceSnapshot(),
-                b.getStatus() != null ? b.getStatus().name() : null,
-                b.getCustomerNote(),
-                b.getSalonNote(),
-                b.getCancellationReason(),
-                b.getCompletedAt(),
-                b.getCreatedAt(),
-                b.getUpdatedAt()
-        );
+        return bookings.stream().map(responseMapper::toResponse).toList();
     }
 }

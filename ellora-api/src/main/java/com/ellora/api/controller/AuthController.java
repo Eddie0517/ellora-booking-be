@@ -10,6 +10,8 @@ import com.ellora.application.feature.auth.RefreshTokenUseCase;
 import com.ellora.application.feature.auth.RegisterUserUseCase;
 import com.ellora.application.feature.auth.ResendVerificationUseCase;
 import com.ellora.application.feature.auth.VerifyEmailUseCase;
+import com.ellora.application.feature.auth.UpdateProfileUseCase;
+import com.ellora.application.feature.auth.dto.UpdateProfileRequest;
 import com.ellora.application.feature.auth.dto.ChangePasswordRequest;
 import com.ellora.application.feature.auth.dto.ConfirmForgotPasswordRequest;
 import com.ellora.application.feature.auth.dto.ForgotPasswordRequest;
@@ -33,6 +35,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,6 +53,7 @@ public class AuthController {
     private final LoginUserUseCase loginUserUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
     private final GetCurrentUserUseCase getCurrentUserUseCase;
+    private final UpdateProfileUseCase updateProfileUseCase;
     private final LogoutUserUseCase logoutUserUseCase;
     private final ChangePasswordUseCase changePasswordUseCase;
     private final ForgotPasswordUseCase forgotPasswordUseCase;
@@ -96,6 +100,14 @@ public class AuthController {
     public ResponseEntity<UserProfileResponse> getCurrentUser(@AuthenticationPrincipal UUID userId) {
         UserProfileResponse profile = getCurrentUserUseCase.execute(userId);
         return ResponseEntity.ok(profile);
+    }
+
+    @PutMapping("/me")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Update current user profile")
+    public ResponseEntity<UserProfileResponse> updateProfile(@AuthenticationPrincipal UUID userId,
+            @Valid @RequestBody UpdateProfileRequest request) {
+        return ResponseEntity.ok(updateProfileUseCase.execute(userId, request));
     }
 
     @PostMapping("/logout")

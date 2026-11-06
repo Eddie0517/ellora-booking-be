@@ -20,7 +20,7 @@ public class BookingMapper {
             } catch (IllegalArgumentException ignored) {}
         }
 
-        return new Booking(
+        Booking booking = new Booking(
                 entity.getId(),
                 entity.getCustomerId(),
                 entity.getWalkInName(),
@@ -47,6 +47,9 @@ public class BookingMapper {
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );
+        booking.setCustomerPhone(entity.getCustomerPhone());
+        booking.setCompletionResolution(entity.getCompletionResolution());
+        return booking;
     }
 
     public BookingEntity toEntity(Booking domain) {
@@ -60,6 +63,7 @@ public class BookingMapper {
                 .walkInName(domain.getWalkInName())
                 .guestEmail(domain.getGuestEmail())
                 .walkInPhone(domain.getWalkInPhone())
+                .customerPhone(domain.getCustomerPhone())
                 .salonId(domain.getSalonId())
                 .serviceId(domain.getServiceId())
                 .employeeId(domain.getEmployeeId())
@@ -76,6 +80,7 @@ public class BookingMapper {
                 .completionRespondedAt(domain.getCompletionRespondedAt())
                 .completionCustomerNote(domain.getCompletionCustomerNote())
                 .completionAdminNote(domain.getCompletionAdminNote())
+                .completionResolution(domain.getCompletionResolution())
                 .completionResolvedAt(domain.getCompletionResolvedAt())
                 .revenueEstimated(domain.isRevenueEstimated())
                 .createdAt(domain.getCreatedAt())

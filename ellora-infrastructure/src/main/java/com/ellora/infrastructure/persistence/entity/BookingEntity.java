@@ -32,6 +32,9 @@ public class BookingEntity {
     @Column(name = "customer_id")
     private UUID customerId;
 
+    @Column(name = "customer_hidden_at")
+    private Instant customerHiddenAt;
+
     @Column(name = "walk_in_name", length = 255)
     private String walkInName;
 
@@ -40,6 +43,9 @@ public class BookingEntity {
 
     @Column(name = "walk_in_phone", length = 20)
     private String walkInPhone;
+
+    @Column(name = "customer_phone", length = 20)
+    private String customerPhone;
 
     @Column(name = "salon_id", nullable = false)
     private Long salonId;
@@ -77,6 +83,9 @@ public class BookingEntity {
 
     @Column(name = "completion_admin_note", length = 2000)
     private String completionAdminNote;
+
+    @Column(name = "completion_resolution", length = 16)
+    private String completionResolution;
 
     @Column(name = "completion_resolved_at")
     private Instant completionResolvedAt;

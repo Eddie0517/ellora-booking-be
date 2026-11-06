@@ -154,4 +154,21 @@ class BookingTest {
         assertEquals(BookingStatus.DISPUTED, booking.getStatus());
         assertEquals("Unsatisfactory nail shape", booking.getCompletionCustomerNote());
     }
+
+    @Test
+    void customerDisputeCanBeResolvedOnce() {
+        Booking booking = Booking.createNew(
+                UUID.randomUUID(), 1L, 2L, null, Instant.now().plus(1, ChronoUnit.DAYS), 30, BigDecimal.TEN, null);
+        booking.confirm();
+        booking.complete("AWAITING_CUSTOMER");
+        long version = booking.getCompletionVersion();
+        booking.respondToCompletion(false, version, "Dịch vụ chưa hoàn tất");
+        assertEquals(BookingStatus.DISPUTED, booking.getStatus());
+        assertEquals("Dịch vụ chưa hoàn tất", booking.getCompletionCustomerNote());
+        assertThrows(BusinessRuleException.class,
+                () -> booking.respondToCompletion(false, version, "Gửi lần hai"));
+        booking.resolveDispute("REOPENED", "Salon thực hiện lại");
+        assertEquals(BookingStatus.CONFIRMED, booking.getStatus());
+        assertNotNull(booking.getCompletionResolvedAt());
+    }
 }

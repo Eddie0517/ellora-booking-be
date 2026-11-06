@@ -34,7 +34,8 @@ public class GetSalonsUseCase {
                         s.getPhone(),
                         s.getLogoUrl(),
                         s.getAverageRating(),
-                        s.getTotalReviews()
+                        s.getTotalReviews(),
+                        s.getSubscriptionTier()
                 ))
                 .toList();
 

@@ -17,6 +17,7 @@ public class Booking {
     private String walkInName;
     private String guestEmail;
     private String walkInPhone;
+    private String customerPhone;
     private Long salonId;
     private Long serviceId;
     private Long employeeId;
@@ -33,6 +34,7 @@ public class Booking {
     private Instant completionRespondedAt;
     private String completionCustomerNote;
     private String completionAdminNote;
+    private String completionResolution;
     private Instant completionResolvedAt;
     private boolean revenueEstimated;
     private Instant createdAt;
@@ -235,6 +237,8 @@ public class Booking {
         this.status = BookingStatus.COMPLETED;
         this.completedAt = Instant.now();
         this.completionConfirmation = confirmation != null ? confirmation : "CUSTOMER_CONFIRMED";
+        this.completionVersion = this.completionVersion == null ? 1L : this.completionVersion + 1;
+        this.completionRespondedAt = null;
         this.updatedAt = Instant.now();
     }
 
@@ -262,6 +266,52 @@ public class Booking {
         this.updatedAt = Instant.now();
     }
 
+    public void respondToCompletion(boolean completed, long version, String reason) {
+        if (this.customerId == null || this.status != BookingStatus.COMPLETED) {
+            throw new BusinessRuleException("INVALID_COMPLETION_RESPONSE", "Chỉ khách đã đặt lịch mới có thể xác nhận lịch hoàn thành");
+        }
+        if (this.completionVersion == null || this.completionVersion != version || this.completionRespondedAt != null) {
+            throw new BusinessRuleException("STALE_COMPLETION_RESPONSE", "Lịch hẹn đã được phản hồi hoặc đã thay đổi");
+        }
+        if (completed) {
+            this.completionConfirmation = "CUSTOMER_CONFIRMED";
+        } else {
+            if (this.completionResolvedAt != null) {
+                throw new BusinessRuleException("DISPUTE_ALREADY_RESOLVED", "Lịch hẹn đã có phản ánh được xử lý");
+            }
+            if (reason == null || reason.isBlank()) {
+                throw new BusinessRuleException("INVALID_DISPUTE_REASON", "Vui lòng nêu lý do phản ánh");
+            }
+            dispute(reason.trim());
+            this.completionConfirmation = "DISPUTED";
+        }
+        this.completionRespondedAt = Instant.now();
+        this.completionVersion++;
+        this.updatedAt = Instant.now();
+    }
+
+    public void resolveDispute(String outcome, String note) {
+        if (this.status != BookingStatus.DISPUTED || this.completionResolvedAt != null) {
+            throw new BusinessRuleException("INVALID_DISPUTE_STATUS", "Phản ánh không còn ở trạng thái chờ xử lý");
+        }
+        if (note == null || note.isBlank()) {
+            throw new BusinessRuleException("INVALID_DISPUTE_NOTE", "Kết luận không được để trống");
+        }
+        if ("UPHELD".equals(outcome)) {
+            this.status = BookingStatus.COMPLETED;
+        } else if ("REOPENED".equals(outcome)) {
+            this.status = BookingStatus.CONFIRMED;
+        } else {
+            throw new BusinessRuleException("INVALID_DISPUTE_OUTCOME", "Cách xử lý phản ánh không hợp lệ");
+        }
+        this.completionConfirmation = outcome;
+        this.completionResolution = outcome;
+        this.completionAdminNote = note.trim();
+        this.completionResolvedAt = Instant.now();
+        this.completionVersion++;
+        this.updatedAt = Instant.now();
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -276,6 +326,8 @@ public class Booking {
 
     public String getWalkInPhone() { return walkInPhone; }
     public void setWalkInPhone(String walkInPhone) { this.walkInPhone = walkInPhone; }
+    public String getCustomerPhone() { return customerPhone; }
+    public void setCustomerPhone(String customerPhone) { this.customerPhone = customerPhone; }
 
     public Long getSalonId() { return salonId; }
     public void setSalonId(Long salonId) { this.salonId = salonId; }
@@ -324,6 +376,8 @@ public class Booking {
 
     public String getCompletionAdminNote() { return completionAdminNote; }
     public void setCompletionAdminNote(String completionAdminNote) { this.completionAdminNote = completionAdminNote; }
+    public String getCompletionResolution() { return completionResolution; }
+    public void setCompletionResolution(String completionResolution) { this.completionResolution = completionResolution; }
 
     public Instant getCompletionResolvedAt() { return completionResolvedAt; }
     public void setCompletionResolvedAt(Instant completionResolvedAt) { this.completionResolvedAt = completionResolvedAt; }

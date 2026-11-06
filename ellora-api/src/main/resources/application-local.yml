@@ -35,4 +35,4 @@ app:
     from: ${MAIL_FROM:no-reply@ellora.vn}
     from-name: ${MAIL_FROM_NAME:Ellora Booking}
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:4200}

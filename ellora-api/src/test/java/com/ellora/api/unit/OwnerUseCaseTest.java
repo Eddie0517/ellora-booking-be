@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ellora.application.feature.booking.dto.BookingDetailsResponse;
+import com.ellora.application.feature.booking.BookingResponseMapper;
 import com.ellora.application.feature.owner.GetOwnerBookingsUseCase;
 import com.ellora.application.feature.owner.GetOwnerDashboardUseCase;
 import com.ellora.application.feature.owner.GetOwnerSalonUseCase;
@@ -59,6 +60,8 @@ class OwnerUseCaseTest {
     private NailServiceRepository nailServiceRepository;
     @Mock
     private EmployeeRepository employeeRepository;
+    @Mock
+    private com.ellora.domain.repository.UserRepository userRepository;
 
     private GetOwnerSalonUseCase getOwnerSalonUseCase;
     private UpdateOwnerSalonUseCase updateOwnerSalonUseCase;
@@ -78,7 +81,8 @@ class OwnerUseCaseTest {
         getOwnerDashboardUseCase = new GetOwnerDashboardUseCase(salonRepository, bookingRepository, reviewRepository);
         manageOwnerServicesUseCase = new ManageOwnerServicesUseCase(salonRepository, nailServiceRepository);
         manageOwnerEmployeesUseCase = new ManageOwnerEmployeesUseCase(salonRepository, employeeRepository);
-        getOwnerBookingsUseCase = new GetOwnerBookingsUseCase(salonRepository, bookingRepository);
+        getOwnerBookingsUseCase = new GetOwnerBookingsUseCase(salonRepository, bookingRepository,
+                new BookingResponseMapper(userRepository, salonRepository, nailServiceRepository));
 
         sampleSalon = new Salon(salonId, ownerId, "Beauty Nails", "Best salon in town", "123 Street",
                 "Hanoi", "Ba Dinh", "0901234567", "owner@salon.com", "https://img.com/logo.png",

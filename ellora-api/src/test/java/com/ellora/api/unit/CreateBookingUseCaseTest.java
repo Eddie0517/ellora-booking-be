@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.ellora.application.feature.booking.CreateBookingUseCase;
 import com.ellora.application.feature.booking.dto.BookingDetailsResponse;
 import com.ellora.application.feature.booking.dto.CreateBookingRequest;
+import com.ellora.application.feature.salon.GetSalonAvailabilityUseCase;
 import com.ellora.domain.constant.SalonStatus;
 import com.ellora.domain.exception.BusinessRuleException;
 import com.ellora.domain.model.Booking;
@@ -30,7 +31,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -49,7 +49,11 @@ class CreateBookingUseCaseTest {
     @Mock
     private EmployeeRepository employeeRepository;
 
-    @InjectMocks
+    @Mock
+    private GetSalonAvailabilityUseCase availability;
+    @Mock
+    private com.ellora.domain.repository.UserRepository userRepository;
+
     private CreateBookingUseCase createBookingUseCase;
 
     private Salon mockSalon;
@@ -58,6 +62,10 @@ class CreateBookingUseCaseTest {
 
     @BeforeEach
     void setUp() {
+        createBookingUseCase = new CreateBookingUseCase(bookingRepository, salonRepository,
+                nailServiceRepository, employeeRepository, availability,
+                new com.ellora.application.feature.booking.BookingResponseMapper(
+                        userRepository, salonRepository, nailServiceRepository));
         mockSalon = new Salon();
         mockSalon.setId(1L);
         mockSalon.setName("Beauty Lounge");
@@ -82,7 +90,7 @@ class CreateBookingUseCaseTest {
         UUID customerId = UUID.randomUUID();
         Instant scheduledAt = Instant.now().plus(2, ChronoUnit.DAYS);
         CreateBookingRequest request = new CreateBookingRequest(
-                1L, 10L, 100L, scheduledAt, null, "First time customer", null, null, null);
+                1L, 10L, 100L, scheduledAt, null, "First time customer", null, null, null, "0912345678");
 
         when(salonRepository.findById(1L)).thenReturn(Optional.of(mockSalon));
         when(nailServiceRepository.findById(10L)).thenReturn(Optional.of(mockService));
@@ -104,6 +112,9 @@ class CreateBookingUseCaseTest {
         assertEquals(45, response.durationMinutes());
         assertEquals(new BigDecimal("200000"), response.servicePriceSnapshot());
         assertEquals("PENDING", response.status());
+        assertEquals("0912345678", response.customerPhone());
+        assertEquals("Beauty Lounge", response.salonName());
+        assertEquals("Gel Manicure", response.serviceName());
         verify(bookingRepository).save(any(Booking.class));
     }
 

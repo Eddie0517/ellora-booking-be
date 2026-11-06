@@ -45,7 +45,8 @@ public class CreateSalonUseCase {
                 saved.getLatitude(),
                 saved.getLongitude(),
                 saved.getAverageRating(),
-                saved.getTotalReviews()
+                saved.getTotalReviews(),
+                saved.getSubscriptionTier()
         );
     }
 }

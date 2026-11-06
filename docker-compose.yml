@@ -70,8 +70,14 @@ services:
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:4200}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
       API_BASE_URL: ${API_BASE_URL:-http://localhost:8080}
+      PAYOS_CLIENT_ID: ${PAYOS_CLIENT_ID:-}
+      PAYOS_API_KEY: ${PAYOS_API_KEY:-}
+      PAYOS_CHECKSUM_KEY: ${PAYOS_CHECKSUM_KEY:-}
+      PAYOS_BASE_URL: ${PAYOS_BASE_URL:-https://api-merchant.payos.vn}
+      PAYOS_RETURN_URL: ${PAYOS_RETURN_URL:-http://localhost:5173/owner/subscription}
+      PAYOS_CANCEL_URL: ${PAYOS_CANCEL_URL:-http://localhost:5173/owner/subscription}
     volumes:
       - .:/app
       - backend_m2:/root/.m2
@@ -86,6 +92,20 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    networks:
+      - ellora-network
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ellora-ngrok
+    restart: unless-stopped
+    profiles: ["payos-local"]
+    command: ["http", "backend:8080", "--url", "https://${NGROK_DOMAIN}"]
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    depends_on:
+      backend:
+        condition: service_healthy
     networks:
       - ellora-network
 

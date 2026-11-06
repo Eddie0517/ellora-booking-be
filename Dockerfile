@@ -15,8 +15,8 @@ COPY pom.xml ./
 COPY . ./
 
 # Build deployable fat JAR if ellora-api submodule is present; otherwise prepare fallback placeholder
-RUN if [ -f "ellora-api/pom.xml" ]; then \
-        mvn clean package -DskipTests; \
+RUN --mount=type=cache,target=/root/.m2 if [ -f "ellora-api/pom.xml" ]; then \
+        mvn -q clean package -DskipTests; \
     else \
         mkdir -p ellora-api/target && \
         touch ellora-api/target/ellora-api-placeholder.jar; \

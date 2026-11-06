@@ -43,7 +43,8 @@ public class GetOwnerSalonUseCase {
                 salon.getLatitude(),
                 salon.getLongitude(),
                 salon.getAverageRating(),
-                salon.getTotalReviews()
+                salon.getTotalReviews(),
+                salon.getSubscriptionTier()
         );
     }
 }

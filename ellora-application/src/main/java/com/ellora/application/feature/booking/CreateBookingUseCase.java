@@ -2,6 +2,7 @@ package com.ellora.application.feature.booking;
 
 import com.ellora.application.feature.booking.dto.CreateBookingRequest;
 import com.ellora.application.feature.booking.dto.BookingDetailsResponse;
+import com.ellora.application.feature.salon.GetSalonAvailabilityUseCase;
 import com.ellora.domain.exception.BusinessRuleException;
 import com.ellora.domain.model.Booking;
 import com.ellora.domain.model.Employee;
@@ -13,6 +14,7 @@ import com.ellora.domain.repository.NailServiceRepository;
 import com.ellora.domain.repository.SalonRepository;
 import java.math.BigDecimal;
 import java.util.UUID;
+import java.time.ZoneId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,8 @@ public class CreateBookingUseCase {
     private final SalonRepository salonRepository;
     private final NailServiceRepository nailServiceRepository;
     private final EmployeeRepository employeeRepository;
+    private final GetSalonAvailabilityUseCase availability;
+    private final BookingResponseMapper responseMapper;
 
     @Transactional
     public BookingDetailsResponse execute(UUID customerId, CreateBookingRequest request) {
@@ -55,6 +59,9 @@ public class CreateBookingUseCase {
                 ? request.durationMinutes()
                 : service.getDurationMinutes();
 
+        availability.assertAvailable(salon.getId(), request.scheduledAt().atZone(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDate(),
+                service.getId(), request.employeeId(), request.scheduledAt());
+
         BigDecimal priceSnapshot = service.getPrice();
 
         Booking booking;
@@ -69,6 +76,9 @@ public class CreateBookingUseCase {
                     priceSnapshot,
                     request.customerNote()
             );
+            if (request.customerPhone() != null && !request.customerPhone().isBlank()) {
+                booking.setCustomerPhone(request.customerPhone().trim());
+            }
         } else {
             booking = Booking.createGuest(
                     request.walkInName(),
@@ -86,29 +96,6 @@ public class CreateBookingUseCase {
 
         Booking saved = bookingRepository.save(booking);
 
-        return toResponse(saved);
-    }
-
-    public static BookingDetailsResponse toResponse(Booking booking) {
-        return new BookingDetailsResponse(
-                booking.getId(),
-                booking.getCustomerId(),
-                booking.getWalkInName(),
-                booking.getGuestEmail(),
-                booking.getWalkInPhone(),
-                booking.getSalonId(),
-                booking.getServiceId(),
-                booking.getEmployeeId(),
-                booking.getScheduledAt(),
-                booking.getDurationMinutes(),
-                booking.getServicePriceSnapshot(),
-                booking.getStatus().name(),
-                booking.getCustomerNote(),
-                booking.getSalonNote(),
-                booking.getCancellationReason(),
-                booking.getCompletedAt(),
-                booking.getCreatedAt(),
-                booking.getUpdatedAt()
-        );
+        return responseMapper.toResponse(saved);
     }
 }

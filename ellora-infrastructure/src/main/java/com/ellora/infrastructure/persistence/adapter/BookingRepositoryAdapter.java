@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -34,10 +35,37 @@ public class BookingRepositoryAdapter implements BookingRepository {
 
     @Override
     public List<Booking> findByCustomerId(UUID customerId) {
-        return springDataBookingRepository.findByCustomerIdOrderByScheduledAtDesc(customerId)
+        return springDataBookingRepository.findByCustomerIdAndCustomerHiddenAtIsNullOrderByScheduledAtDesc(customerId)
                 .stream()
                 .map(bookingMapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public List<Booking> findByCustomerId(UUID customerId, int page, int pageSize) {
+        return springDataBookingRepository.findByCustomerIdAndCustomerHiddenAtIsNullOrderByScheduledAtDesc(customerId, PageRequest.of(page, pageSize))
+                .stream().map(bookingMapper::toDomain).toList();
+    }
+
+    @Override
+    public long countByCustomerId(UUID customerId) {
+        return springDataBookingRepository.countByCustomerIdAndCustomerHiddenAtIsNull(customerId);
+    }
+
+    @Override
+    public void hideCancelledForCustomer(Long bookingId, UUID customerId) {
+        springDataBookingRepository.hideCancelledForCustomer(bookingId, customerId, Instant.now());
+    }
+
+    @Override
+    public List<Booking> findDisputes(String status, int page, int pageSize) {
+        return springDataBookingRepository.findDisputes(status, PageRequest.of(page, pageSize))
+                .stream().map(bookingMapper::toDomain).toList();
+    }
+
+    @Override
+    public long countDisputes(String status) {
+        return springDataBookingRepository.findDisputes(status, PageRequest.of(0, 1)).getTotalElements();
     }
 
     @Override

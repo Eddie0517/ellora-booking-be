@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TransitionBookingStatusUseCase {
 
     private final BookingRepository bookingRepository;
+    private final BookingResponseMapper responseMapper;
 
     @Transactional
     public BookingDetailsResponse execute(Long id, TransitionStatusRequest request) {
@@ -32,7 +33,10 @@ public class TransitionBookingStatusUseCase {
 
         switch (targetStatus) {
             case CONFIRMED -> booking.confirm();
-            case COMPLETED -> booking.complete(request.note());
+            case COMPLETED -> {
+                booking.setSalonNote(request.note());
+                booking.complete("AWAITING_CUSTOMER");
+            }
             case CANCELLED -> {
                 String reason = request.cancellationReason() != null && !request.cancellationReason().isBlank()
                         ? request.cancellationReason()
@@ -46,6 +50,6 @@ public class TransitionBookingStatusUseCase {
 
         Booking updated = bookingRepository.save(booking);
 
-        return CreateBookingUseCase.toResponse(updated);
+        return responseMapper.toResponse(updated);
     }
 }

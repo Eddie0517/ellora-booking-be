@@ -11,5 +11,11 @@ public record SalonSummaryResponse(
     String phone,
     String logoUrl,
     BigDecimal averageRating,
-    Integer totalReviews
-) {}
+    Integer totalReviews,
+    String subscriptionTier
+) {
+    public SalonSummaryResponse(Long id, String name, String address, String city, String district,
+                                String phone, String logoUrl, BigDecimal averageRating, Integer totalReviews) {
+        this(id, name, address, city, district, phone, logoUrl, averageRating, totalReviews, null);
+    }
+}

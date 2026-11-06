@@ -40,7 +40,8 @@ public class GetPendingSalonsUseCase {
                 s.getLatitude(),
                 s.getLongitude(),
                 s.getAverageRating(),
-                s.getTotalReviews()
+                s.getTotalReviews(),
+                s.getSubscriptionTier()
         )).toList();
 
         return PagedResult.of(items, normalizedPage, normalizedSize, totalItems);

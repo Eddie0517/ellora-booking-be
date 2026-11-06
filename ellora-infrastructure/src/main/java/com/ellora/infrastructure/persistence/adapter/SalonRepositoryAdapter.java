@@ -36,14 +36,18 @@ public class SalonRepositoryAdapter implements SalonRepository {
     @Override
     public List<Salon> searchActiveSalons(String city, String keyword, int offset, int limit) {
         int pageNumber = offset / Math.max(1, limit);
-        Page<SalonEntity> page = springDataSalonRepository.searchActiveSalons(city, keyword, PageRequest.of(pageNumber, limit));
+        Page<SalonEntity> page = springDataSalonRepository.searchActiveSalons(normalize(city), normalize(keyword), PageRequest.of(pageNumber, limit));
         return page.getContent().stream().map(salonMapper::toDomain).toList();
     }
 
     @Override
     public long countActiveSalons(String city, String keyword) {
-        Page<SalonEntity> page = springDataSalonRepository.searchActiveSalons(city, keyword, PageRequest.of(0, 1));
+        Page<SalonEntity> page = springDataSalonRepository.searchActiveSalons(normalize(city), normalize(keyword), PageRequest.of(0, 1));
         return page.getTotalElements();
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim();
     }
 
     @Override

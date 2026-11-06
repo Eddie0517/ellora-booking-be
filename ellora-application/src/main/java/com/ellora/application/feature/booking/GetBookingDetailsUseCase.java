@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class GetBookingDetailsUseCase {
 
     private final BookingRepository bookingRepository;
+    private final BookingResponseMapper responseMapper;
 
     @Transactional(readOnly = true)
     public BookingDetailsResponse execute(Long id) {
@@ -20,6 +21,6 @@ public class GetBookingDetailsUseCase {
                 .orElseThrow(() -> new BusinessRuleException("BOOKING_NOT_FOUND",
                         "Không tìm thấy lịch hẹn với mã định danh " + id));
 
-        return CreateBookingUseCase.toResponse(booking);
+        return responseMapper.toResponse(booking);
     }
 }

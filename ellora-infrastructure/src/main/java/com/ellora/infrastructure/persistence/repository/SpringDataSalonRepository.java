@@ -20,8 +20,8 @@ public interface SpringDataSalonRepository extends JpaRepository<SalonEntity, Lo
     long countByStatus(String status);
 
     @Query("SELECT s FROM SalonEntity s WHERE s.status = 'ACTIVE' " +
-           "AND (:city IS NULL OR LOWER(s.city) = LOWER(:city)) " +
-           "AND (:keyword IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(s.address) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+           "AND (:city = '' OR LOWER(s.city) = LOWER(:city)) " +
+           "AND (:keyword = '' OR LOWER(s.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(s.address) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<SalonEntity> searchActiveSalons(
             @Param("city") String city,
             @Param("keyword") String keyword,

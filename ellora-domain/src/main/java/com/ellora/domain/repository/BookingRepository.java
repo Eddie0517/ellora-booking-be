@@ -15,6 +15,14 @@ public interface BookingRepository {
 
     List<Booking> findByCustomerId(UUID customerId);
 
+    List<Booking> findByCustomerId(UUID customerId, int page, int pageSize);
+
+    long countByCustomerId(UUID customerId);
+
+    void hideCancelledForCustomer(Long bookingId, UUID customerId);
+    List<Booking> findDisputes(String status, int page, int pageSize);
+    long countDisputes(String status);
+
     List<Booking> findBySalonId(Long salonId);
 
     List<Booking> findBySalonIdAndStatus(Long salonId, BookingStatus status);

@@ -6,7 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 
+import com.ellora.application.feature.booking.BookingResponseMapper;
 import com.ellora.application.feature.booking.TransitionBookingStatusUseCase;
 import com.ellora.application.feature.booking.dto.BookingDetailsResponse;
 import com.ellora.application.feature.booking.dto.TransitionStatusRequest;
@@ -21,7 +23,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -31,13 +32,16 @@ class TransitionBookingStatusUseCaseTest {
     @Mock
     private BookingRepository bookingRepository;
 
-    @InjectMocks
     private TransitionBookingStatusUseCase transitionBookingStatusUseCase;
 
     private Booking booking;
 
     @BeforeEach
     void setUp() {
+        transitionBookingStatusUseCase = new TransitionBookingStatusUseCase(bookingRepository,
+                new BookingResponseMapper(mock(com.ellora.domain.repository.UserRepository.class),
+                        mock(com.ellora.domain.repository.SalonRepository.class),
+                        mock(com.ellora.domain.repository.NailServiceRepository.class)));
         booking = Booking.createNew(
                 UUID.randomUUID(),
                 1L,

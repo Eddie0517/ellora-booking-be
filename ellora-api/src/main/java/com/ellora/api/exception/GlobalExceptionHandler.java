@@ -69,8 +69,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ProblemDetail> handleBusinessRuleException(
             BusinessRuleException ex, HttpServletRequest request) {
         log.warn("Business rule violation [{}] at {}: {}", ex.getErrorCode(), request.getRequestURI(), ex.getMessage());
-        HttpStatus status = "INVALID_CREDENTIALS".equals(ex.getErrorCode())
-                ? HttpStatus.UNAUTHORIZED
+        HttpStatus status = "INVALID_CREDENTIALS".equals(ex.getErrorCode()) ? HttpStatus.UNAUTHORIZED
+                : "FORBIDDEN".equals(ex.getErrorCode()) ? HttpStatus.FORBIDDEN
                 : HttpStatus.UNPROCESSABLE_ENTITY;
 
         ProblemDetail problemDetail =

@@ -5,7 +5,11 @@ import com.ellora.application.feature.salon.CreateSalonUseCase;
 import com.ellora.application.feature.salon.GetSalonDetailsUseCase;
 import com.ellora.application.feature.salon.GetSalonServicesUseCase;
 import com.ellora.application.feature.salon.GetSalonStaffUseCase;
+import com.ellora.application.feature.salon.GetSalonAvailabilityUseCase;
 import com.ellora.application.feature.salon.GetSalonsUseCase;
+import com.ellora.application.feature.owner.WorkingHoursUseCase;
+import com.ellora.application.feature.owner.SalonClosureUseCase;
+import com.ellora.application.feature.owner.dto.WorkingHourDto;
 import com.ellora.application.feature.salon.dto.CreateSalonRequest;
 import com.ellora.application.feature.salon.dto.EmployeeResponse;
 import com.ellora.application.feature.salon.dto.NailServiceResponse;
@@ -16,6 +20,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -40,6 +46,9 @@ public class SalonController {
     private final GetSalonServicesUseCase getSalonServicesUseCase;
     private final GetSalonStaffUseCase getSalonStaffUseCase;
     private final CreateSalonUseCase createSalonUseCase;
+    private final WorkingHoursUseCase workingHoursUseCase;
+    private final SalonClosureUseCase salonClosureUseCase;
+    private final GetSalonAvailabilityUseCase getSalonAvailabilityUseCase;
 
     @GetMapping
     @Operation(summary = "Search and list salons", description = "Returns paginated list of active nail salons matching city and keyword filters")
@@ -57,6 +66,25 @@ public class SalonController {
     public ResponseEntity<SalonDetailsResponse> getSalonDetails(@PathVariable Long id) {
         SalonDetailsResponse response = getSalonDetailsUseCase.execute(id);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/working-hours")
+    public ResponseEntity<List<WorkingHourDto>> getWorkingHours(@PathVariable Long id) {
+        return ResponseEntity.ok(workingHoursUseCase.forSalon(id));
+    }
+
+    @GetMapping("/{id}/closures")
+    public ResponseEntity<List<LocalDate>> getClosures(@PathVariable Long id,
+            @RequestParam LocalDate from, @RequestParam LocalDate to) {
+        return ResponseEntity.ok(salonClosureUseCase.datesForSalon(id, from, to));
+    }
+
+    @GetMapping("/{id}/availability")
+    @Operation(summary = "Get available booking times", description = "Returns 30-minute start times that fit salon hours, closures, the service duration, and existing bookings")
+    public ResponseEntity<List<LocalTime>> getAvailability(@PathVariable Long id,
+            @RequestParam LocalDate date, @RequestParam Long serviceId,
+            @RequestParam(required = false) Long employeeId) {
+        return ResponseEntity.ok(getSalonAvailabilityUseCase.execute(id, date, serviceId, employeeId));
     }
 
     @GetMapping("/{id}/services")

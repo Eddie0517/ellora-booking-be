@@ -4,9 +4,16 @@ import com.ellora.application.feature.booking.dto.BookingDetailsResponse;
 import com.ellora.application.feature.owner.GetOwnerBookingsUseCase;
 import com.ellora.application.feature.owner.GetOwnerDashboardUseCase;
 import com.ellora.application.feature.owner.GetOwnerSalonUseCase;
+import com.ellora.application.feature.owner.CreateOwnerWalkInBookingUseCase;
 import com.ellora.application.feature.owner.ManageOwnerEmployeesUseCase;
 import com.ellora.application.feature.owner.ManageOwnerServicesUseCase;
 import com.ellora.application.feature.owner.UpdateOwnerSalonUseCase;
+import com.ellora.application.feature.owner.WorkingHoursUseCase;
+import com.ellora.application.feature.owner.SalonClosureUseCase;
+import com.ellora.application.feature.owner.dto.CreateSalonClosureRequest;
+import com.ellora.application.feature.owner.dto.CreateWalkInBookingRequest;
+import com.ellora.application.feature.owner.dto.SalonClosureDto;
+import com.ellora.application.feature.owner.dto.WorkingHourDto;
 import com.ellora.application.feature.owner.dto.CreateEmployeeRequest;
 import com.ellora.application.feature.owner.dto.CreateServiceRequest;
 import com.ellora.application.feature.owner.dto.EmployeeResponse;
@@ -50,12 +57,52 @@ public class OwnerController {
     private final ManageOwnerServicesUseCase manageOwnerServicesUseCase;
     private final ManageOwnerEmployeesUseCase manageOwnerEmployeesUseCase;
     private final GetOwnerBookingsUseCase getOwnerBookingsUseCase;
+    private final WorkingHoursUseCase workingHoursUseCase;
+    private final SalonClosureUseCase salonClosureUseCase;
+    private final CreateOwnerWalkInBookingUseCase createOwnerWalkInBookingUseCase;
 
     private UUID getOwnerId(Object principal) {
         if (!(principal instanceof UUID ownerId)) {
             throw new BusinessRuleException("UNAUTHORIZED", "Vui lòng đăng nhập với quyền chủ tiệm");
         }
         return ownerId;
+    }
+
+    @GetMapping("/salon/working-hours")
+    public ResponseEntity<List<WorkingHourDto>> getWorkingHours(@AuthenticationPrincipal Object principal) {
+        return ResponseEntity.ok(workingHoursUseCase.forOwner(getOwnerId(principal)));
+    }
+
+    @PutMapping("/salon/working-hours")
+    public ResponseEntity<List<WorkingHourDto>> saveWorkingHours(@AuthenticationPrincipal Object principal,
+            @Valid @RequestBody List<@Valid WorkingHourDto> request) {
+        return ResponseEntity.ok(workingHoursUseCase.save(getOwnerId(principal), request));
+    }
+
+    @GetMapping("/salon/closures")
+    public ResponseEntity<List<SalonClosureDto>> getClosures(@AuthenticationPrincipal Object principal) {
+        return ResponseEntity.ok(salonClosureUseCase.forOwner(getOwnerId(principal)));
+    }
+
+    @PostMapping("/salon/closures")
+    public ResponseEntity<SalonClosureDto> createClosure(@AuthenticationPrincipal Object principal,
+            @Valid @RequestBody CreateSalonClosureRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(salonClosureUseCase.create(getOwnerId(principal), request));
+    }
+
+    @DeleteMapping("/salon/closures/{id}")
+    public ResponseEntity<Void> deleteClosure(@AuthenticationPrincipal Object principal, @PathVariable Long id) {
+        salonClosureUseCase.delete(getOwnerId(principal), id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/bookings/walk-ins")
+    @Operation(summary = "Create a walk-in booking", description = "Creates a guest booking for the salon owned by the authenticated owner")
+    public ResponseEntity<BookingDetailsResponse> createWalkInBooking(
+            @AuthenticationPrincipal Object principal,
+            @Valid @RequestBody CreateWalkInBookingRequest request) {
+        BookingDetailsResponse response = createOwnerWalkInBookingUseCase.execute(getOwnerId(principal), request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/salon")
