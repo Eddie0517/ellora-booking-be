@@ -17,7 +17,7 @@ Status rules:
 ## 2. Authentication and behavior
 
 - **Authentication/authorization**:
-  - Chuẩn: BearerAuth JWT (HMAC-SHA256 / ES256).
+  - Chuẩn: BearerAuth JWT (HMAC-SHA256 / HS256).
   - Header: `Authorization: Bearer <token>`.
   - Phân quyền: Public endpoints (`/healthz`, `/v3/api-docs/**`, `/swagger-ui/**`, `/actuator/**`) không yêu cầu token xác thực (`permitAll`).
 - **Idempotency**:

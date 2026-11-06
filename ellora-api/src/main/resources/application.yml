@@ -35,7 +35,10 @@ management:
         include: health,info,metrics
   endpoint:
     health:
-      show-details: when_authorized
+      show-details: always
+  health:
+    mail:
+      enabled: false
 
 logging:
   level:

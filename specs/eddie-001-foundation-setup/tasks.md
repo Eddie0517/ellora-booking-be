@@ -142,17 +142,17 @@
 
 **Purpose**: Write architecture and conventions documentation, perform frontend contract sync, and verify entire stack end-to-end.
 
-- [ ] T044 [P] Update working agreements and agent instructions in `AGENTS.md`
-- [ ] T045 [P] Create ADR 001 on Monolith Clean Architecture in `docs/decisions/001-monolith-clean-architecture.md`
-- [ ] T046 [P] Create ADR 002 on Self-Managed JWT ES256 in `docs/decisions/002-self-managed-jwt.md`
-- [ ] T047 [P] Create ADR 003 on Flyway Migration in `docs/decisions/003-flyway-migration.md`
-- [ ] T048 [P] Create ADR 004 on Problem Details RFC 9457 in `docs/decisions/004-problem-details-no-envelope.md`
-- [ ] T049 [P] Create coding conventions and code hygiene guide in `docs/development/coding-conventions.md` and `docs/development/code-hygiene.md`
-- [ ] T050 [P] Create testing guide in `docs/development/testing.md` and local setup guide in `docs/development/local-setup.md`
-- [ ] T051 [P] Create API overview and standards guide in `docs/api/README.md`
-- [ ] T052 Perform frontend guide close-out synchronization against source contracts, count routes, fields, enums, and Problem Details in `specs/eddie-001-foundation-setup/frontend-guide.md`
-- [ ] T053 Build and launch full backend container stack via `docker compose up --build -d` and verify `GET http://localhost:8080/healthz` returns 200 OK
-- [ ] T054 Commit all completed foundation tasks locally under `Eddie0517 <khang17122005@gmail.com>` (**DO NOT PUSH**)
+- [x] T044 [P] Update working agreements and agent instructions in `AGENTS.md`
+- [x] T045 [P] Create ADR 001 on Monolith Clean Architecture in `docs/decisions/001-monolith-clean-architecture.md`
+- [x] T046 [P] Create ADR 002 on Self-Managed JWT ES256 in `docs/decisions/002-self-managed-jwt.md`
+- [x] T047 [P] Create ADR 003 on Flyway Migration in `docs/decisions/003-flyway-migration.md`
+- [x] T048 [P] Create ADR 004 on Problem Details RFC 9457 in `docs/decisions/004-problem-details-no-envelope.md`
+- [x] T049 [P] Create coding conventions and code hygiene guide in `docs/development/coding-conventions.md` and `docs/development/code-hygiene.md`
+- [x] T050 [P] Create testing guide in `docs/development/testing.md` and local setup guide in `docs/development/local-setup.md`
+- [x] T051 [P] Create API overview and standards guide in `docs/api/README.md`
+- [x] T052 Perform frontend guide close-out synchronization against source contracts, count routes, fields, enums, and Problem Details in `specs/eddie-001-foundation-setup/frontend-guide.md`
+- [x] T053 Build and launch full backend container stack via `docker compose up --build -d` and verify `GET http://localhost:8080/healthz` returns 200 OK
+- [x] T054 Commit all completed foundation tasks locally under `Eddie0517 <khang17122005@gmail.com>` (**DO NOT PUSH**)
 
 ---
 

@@ -73,7 +73,6 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:4200}
       API_BASE_URL: ${API_BASE_URL:-http://localhost:8080}
     volumes:
-      - .:/app
       - backend_m2:/root/.m2
     depends_on:
       postgres:
@@ -81,7 +80,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O - http://localhost:8080/actuator/health > /dev/null 2>&1 || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8080/healthz > /dev/null 2>&1 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5

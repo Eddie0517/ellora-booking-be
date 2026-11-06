@@ -40,8 +40,9 @@ COPY --from=build /opt/java/openjdk /opt/java/openjdk
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Copy compiled application fat JAR from build stage
-COPY --from=build --chown=ellora:ellora /build/ellora-api/target/*.jar /app/app.jar
+# Copy project source and compiled artifacts from build stage
+COPY --from=build --chown=ellora:ellora /build /app
+RUN mkdir -p /opt/ellora && cp /app/ellora-api/target/*.jar /opt/ellora/app.jar && chown -R ellora:ellora /opt/ellora
 
 # Switch to non-root user
 USER ellora:ellora
@@ -49,4 +50,4 @@ USER ellora:ellora
 EXPOSE 8080
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
-CMD ["java", "-jar", "/app/app.jar"]
+CMD ["java", "-jar", "/opt/ellora/app.jar"]
