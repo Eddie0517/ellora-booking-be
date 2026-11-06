@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface SpringDataEmployeeRepository extends JpaRepository<EmployeeEntity, Long> {
 
     List<EmployeeEntity> findBySalonIdAndActiveTrue(Long salonId);
+
+    List<EmployeeEntity> findBySalonIdOrderByIdAsc(Long salonId);
 }

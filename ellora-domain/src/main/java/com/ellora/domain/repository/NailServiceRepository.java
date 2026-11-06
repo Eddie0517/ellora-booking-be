@@ -8,7 +8,11 @@ public interface NailServiceRepository {
 
     Optional<NailService> findById(Long id);
 
+    List<NailService> findBySalonId(Long salonId);
+
     List<NailService> findBySalonIdAndActiveTrue(Long salonId);
 
     NailService save(NailService service);
+
+    void deleteById(Long id);
 }

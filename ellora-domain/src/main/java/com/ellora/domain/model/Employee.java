@@ -29,6 +29,11 @@ public class Employee {
         this.updatedAt = updatedAt != null ? updatedAt : Instant.now();
     }
 
+    public static Employee createNew(Long salonId, String fullName, String phone, String avatarUrl, String bio) {
+        Instant now = Instant.now();
+        return new Employee(null, salonId, fullName, phone, avatarUrl, bio, true, now, now);
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

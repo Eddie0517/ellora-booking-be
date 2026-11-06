@@ -22,6 +22,12 @@
     "name" : "Bookings",
     "description" : "Endpoints for scheduling appointments, retrieving booking details, and updating status"
   }, {
+    "name" : "Owner Portal",
+    "description" : "Endpoints for salon owners: manage salon profile, services, employees, and view business analytics"
+  }, {
+    "name" : "Media",
+    "description" : "Endpoints for uploading and managing media assets via Cloudinary"
+  }, {
     "name" : "Authentication",
     "description" : "Endpoints for user registration, OTP email verification, authentication and token refresh"
   }, {
@@ -32,6 +38,190 @@
     "description" : "Endpoints for discovering salons, viewing service menus and staff members"
   } ],
   "paths" : {
+    "/api/v1/owner/services/{id}" : {
+      "put" : {
+        "tags" : [ "Owner Portal" ],
+        "summary" : "Update an existing service",
+        "description" : "Updates pricing, duration, or active status of a service",
+        "operationId" : "updateService",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateServiceRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Owner Portal" ],
+        "summary" : "Deactivate/delete a service",
+        "description" : "Deactivates a service in owner's salon",
+        "operationId" : "deleteService",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/owner/salon" : {
+      "get" : {
+        "tags" : [ "Owner Portal" ],
+        "summary" : "Get owner salon profile",
+        "description" : "Retrieves profile of the salon owned by current authenticated user",
+        "operationId" : "getMySalon",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SalonDetailsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "Owner Portal" ],
+        "summary" : "Update owner salon profile",
+        "description" : "Updates details and information of current owner's salon",
+        "operationId" : "updateMySalon",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateOwnerSalonRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SalonDetailsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/owner/employees/{id}" : {
+      "put" : {
+        "tags" : [ "Owner Portal" ],
+        "summary" : "Update an employee",
+        "description" : "Updates details of a staff member",
+        "operationId" : "updateEmployee",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateEmployeeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EmployeeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Owner Portal" ],
+        "summary" : "Deactivate/delete an employee",
+        "description" : "Deactivates a staff member in owner's salon",
+        "operationId" : "deleteEmployee",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/bookings/{id}/status" : {
       "put" : {
         "tags" : [ "Bookings" ],
@@ -220,6 +410,168 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ReviewDetailsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/owner/services" : {
+      "get" : {
+        "tags" : [ "Owner Portal" ],
+        "summary" : "Get all services in salon",
+        "description" : "Retrieves all nail services offered by the owner's salon",
+        "operationId" : "getServices",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ServiceResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Owner Portal" ],
+        "summary" : "Add a new nail service",
+        "description" : "Creates a new nail service under the owner's salon",
+        "operationId" : "createService",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateServiceRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/owner/employees" : {
+      "get" : {
+        "tags" : [ "Owner Portal" ],
+        "summary" : "Get all employees in salon",
+        "description" : "Retrieves all staff members working at owner's salon",
+        "operationId" : "getEmployees",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/EmployeeResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Owner Portal" ],
+        "summary" : "Add a new employee",
+        "description" : "Registers a new staff member to the owner's salon",
+        "operationId" : "createEmployee",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateEmployeeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EmployeeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/media/upload" : {
+      "post" : {
+        "tags" : [ "Media" ],
+        "summary" : "Upload image to Cloudinary",
+        "description" : "Uploads an image (JPG/PNG, max 5MB) and returns the secure public CDN URL",
+        "operationId" : "uploadImage",
+        "parameters" : [ {
+          "name" : "folder",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "ellora"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "required" : [ "file" ],
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UploadImageResponse"
                 }
               }
             }
@@ -632,6 +984,63 @@
         }
       }
     },
+    "/api/v1/owner/dashboard" : {
+      "get" : {
+        "tags" : [ "Owner Portal" ],
+        "summary" : "Get owner dashboard analytics",
+        "description" : "Retrieves aggregated statistics: total bookings, revenue, ratings, and customer metrics",
+        "operationId" : "getDashboard",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/OwnerDashboardSummaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/owner/bookings" : {
+      "get" : {
+        "tags" : [ "Owner Portal" ],
+        "summary" : "Get salon appointments",
+        "description" : "Retrieves appointment bookings for the owner's salon, optionally filtered by status",
+        "operationId" : "getBookings",
+        "parameters" : [ {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/BookingDetailsResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/bookings/{id}" : {
       "get" : {
         "tags" : [ "Bookings" ],
@@ -710,6 +1119,239 @@
   },
   "components" : {
     "schemas" : {
+      "UpdateServiceRequest" : {
+        "required" : [ "durationMinutes", "name", "price" ],
+        "type" : "object",
+        "properties" : {
+          "categoryId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "maxLength" : 255,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "description" : {
+            "maxLength" : 2000,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "price" : {
+            "minimum" : 0,
+            "type" : "number"
+          },
+          "durationMinutes" : {
+            "minimum" : 5,
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "imageUrl" : {
+            "type" : "string"
+          },
+          "active" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "ServiceResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "salonId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "categoryId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "price" : {
+            "type" : "number"
+          },
+          "durationMinutes" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "imageUrl" : {
+            "type" : "string"
+          },
+          "active" : {
+            "type" : "boolean"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "UpdateOwnerSalonRequest" : {
+        "required" : [ "address", "city", "district", "email", "name", "phone" ],
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "maxLength" : 255,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "description" : {
+            "maxLength" : 2000,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "address" : {
+            "type" : "string"
+          },
+          "city" : {
+            "type" : "string"
+          },
+          "district" : {
+            "type" : "string"
+          },
+          "phone" : {
+            "maxLength" : 20,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "logoUrl" : {
+            "type" : "string"
+          }
+        }
+      },
+      "SalonDetailsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "ownerId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "address" : {
+            "type" : "string"
+          },
+          "city" : {
+            "type" : "string"
+          },
+          "district" : {
+            "type" : "string"
+          },
+          "phone" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "logoUrl" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "latitude" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "longitude" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "averageRating" : {
+            "type" : "number"
+          },
+          "totalReviews" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "UpdateEmployeeRequest" : {
+        "required" : [ "fullName" ],
+        "type" : "object",
+        "properties" : {
+          "fullName" : {
+            "maxLength" : 255,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "phone" : {
+            "maxLength" : 20,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "avatarUrl" : {
+            "type" : "string"
+          },
+          "bio" : {
+            "maxLength" : 1000,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "active" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "EmployeeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "salonId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "fullName" : {
+            "type" : "string"
+          },
+          "phone" : {
+            "type" : "string"
+          },
+          "avatarUrl" : {
+            "type" : "string"
+          },
+          "bio" : {
+            "type" : "string"
+          },
+          "active" : {
+            "type" : "boolean"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
       "TransitionStatusRequest" : {
         "required" : [ "status" ],
         "type" : "object",
@@ -823,61 +1465,6 @@
           }
         }
       },
-      "SalonDetailsResponse" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "ownerId" : {
-            "type" : "string",
-            "format" : "uuid"
-          },
-          "name" : {
-            "type" : "string"
-          },
-          "description" : {
-            "type" : "string"
-          },
-          "address" : {
-            "type" : "string"
-          },
-          "city" : {
-            "type" : "string"
-          },
-          "district" : {
-            "type" : "string"
-          },
-          "phone" : {
-            "type" : "string"
-          },
-          "email" : {
-            "type" : "string"
-          },
-          "logoUrl" : {
-            "type" : "string"
-          },
-          "status" : {
-            "type" : "string"
-          },
-          "latitude" : {
-            "type" : "number",
-            "format" : "double"
-          },
-          "longitude" : {
-            "type" : "number",
-            "format" : "double"
-          },
-          "averageRating" : {
-            "type" : "number"
-          },
-          "totalReviews" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        }
-      },
       "CreateReviewRequest" : {
         "required" : [ "bookingId", "rating" ],
         "type" : "object",
@@ -957,6 +1544,70 @@
           "reply" : {
             "maxLength" : 2000,
             "minLength" : 0,
+            "type" : "string"
+          }
+        }
+      },
+      "CreateServiceRequest" : {
+        "required" : [ "durationMinutes", "name", "price" ],
+        "type" : "object",
+        "properties" : {
+          "categoryId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "maxLength" : 255,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "description" : {
+            "maxLength" : 2000,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "price" : {
+            "minimum" : 0,
+            "type" : "number"
+          },
+          "durationMinutes" : {
+            "minimum" : 5,
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "imageUrl" : {
+            "type" : "string"
+          }
+        }
+      },
+      "CreateEmployeeRequest" : {
+        "required" : [ "fullName" ],
+        "type" : "object",
+        "properties" : {
+          "fullName" : {
+            "maxLength" : 255,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "phone" : {
+            "maxLength" : 20,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "avatarUrl" : {
+            "type" : "string"
+          },
+          "bio" : {
+            "maxLength" : 1000,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }
+      },
+      "UploadImageResponse" : {
+        "type" : "object",
+        "properties" : {
+          "url" : {
             "type" : "string"
           }
         }
@@ -1244,34 +1895,6 @@
           }
         }
       },
-      "EmployeeResponse" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "salonId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "fullName" : {
-            "type" : "string"
-          },
-          "phone" : {
-            "type" : "string"
-          },
-          "avatarUrl" : {
-            "type" : "string"
-          },
-          "bio" : {
-            "type" : "string"
-          },
-          "active" : {
-            "type" : "boolean"
-          }
-        }
-      },
       "NailServiceResponse" : {
         "type" : "object",
         "properties" : {
@@ -1305,6 +1928,38 @@
           },
           "active" : {
             "type" : "boolean"
+          }
+        }
+      },
+      "OwnerDashboardSummaryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "totalBookings" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "pendingBookings" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "confirmedBookings" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "completedBookings" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "monthlyRevenue" : {
+            "type" : "number"
+          },
+          "monthlyCustomers" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "averageRating" : {
+            "type" : "number",
+            "format" : "double"
           }
         }
       },

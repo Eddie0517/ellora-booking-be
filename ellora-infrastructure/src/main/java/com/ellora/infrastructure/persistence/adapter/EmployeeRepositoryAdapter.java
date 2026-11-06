@@ -23,6 +23,14 @@ public class EmployeeRepositoryAdapter implements EmployeeRepository {
     }
 
     @Override
+    public List<Employee> findBySalonId(Long salonId) {
+        return springDataEmployeeRepository.findBySalonIdOrderByIdAsc(salonId)
+                .stream()
+                .map(salonMapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<Employee> findBySalonIdAndActiveTrue(Long salonId) {
         return springDataEmployeeRepository.findBySalonIdAndActiveTrue(salonId)
                 .stream()
@@ -35,5 +43,10 @@ public class EmployeeRepositoryAdapter implements EmployeeRepository {
         EmployeeEntity entity = salonMapper.toEntity(employee);
         EmployeeEntity saved = springDataEmployeeRepository.save(entity);
         return salonMapper.toDomain(saved);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        springDataEmployeeRepository.deleteById(id);
     }
 }

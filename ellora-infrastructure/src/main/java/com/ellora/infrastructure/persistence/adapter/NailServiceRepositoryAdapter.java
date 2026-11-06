@@ -23,6 +23,14 @@ public class NailServiceRepositoryAdapter implements NailServiceRepository {
     }
 
     @Override
+    public List<NailService> findBySalonId(Long salonId) {
+        return springDataNailServiceRepository.findBySalonIdOrderByIdAsc(salonId)
+                .stream()
+                .map(salonMapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<NailService> findBySalonIdAndActiveTrue(Long salonId) {
         return springDataNailServiceRepository.findBySalonIdAndActiveTrue(salonId)
                 .stream()
@@ -35,5 +43,10 @@ public class NailServiceRepositoryAdapter implements NailServiceRepository {
         NailServiceEntity entity = salonMapper.toEntity(service);
         NailServiceEntity saved = springDataNailServiceRepository.save(entity);
         return salonMapper.toDomain(saved);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        springDataNailServiceRepository.deleteById(id);
     }
 }

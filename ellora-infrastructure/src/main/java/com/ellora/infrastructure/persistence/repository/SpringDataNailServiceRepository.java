@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface SpringDataNailServiceRepository extends JpaRepository<NailServiceEntity, Long> {
 
     List<NailServiceEntity> findBySalonIdAndActiveTrue(Long salonId);
+
+    List<NailServiceEntity> findBySalonIdOrderByIdAsc(Long salonId);
 }

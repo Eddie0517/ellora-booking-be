@@ -22,4 +22,12 @@ public interface BookingRepository {
     List<Booking> findBySalonIdAndScheduledAtBetween(Long salonId, Instant start, Instant end);
 
     List<Booking> findByWalkInPhone(String phone);
+
+    long countBySalonId(Long salonId);
+
+    long countBySalonIdAndStatus(Long salonId, BookingStatus status);
+
+    java.math.BigDecimal sumCompletedGrossBySalonIdAndPeriod(Long salonId, Instant start, Instant end);
+
+    long countDistinctCompletedCustomersBySalonIdAndPeriod(Long salonId, Instant start, Instant end);
 }

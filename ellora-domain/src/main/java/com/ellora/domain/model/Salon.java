@@ -83,6 +83,19 @@ public class Salon {
         this.updatedAt = Instant.now();
     }
 
+    public void updateProfile(String name, String description, String address, String city, String district,
+                              String phone, String email, String logoUrl) {
+        if (name != null && !name.isBlank()) this.name = name.trim();
+        if (description != null) this.description = description.trim();
+        if (address != null && !address.isBlank()) this.address = address.trim();
+        if (city != null && !city.isBlank()) this.city = city.trim();
+        if (district != null && !district.isBlank()) this.district = district.trim();
+        if (phone != null && !phone.isBlank()) this.phone = phone.trim();
+        if (email != null && !email.isBlank()) this.email = email.trim();
+        if (logoUrl != null) this.logoUrl = logoUrl.trim();
+        this.updatedAt = Instant.now();
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

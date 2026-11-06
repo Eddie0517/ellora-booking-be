@@ -35,6 +35,13 @@ public class NailService {
         this.updatedAt = updatedAt != null ? updatedAt : Instant.now();
     }
 
+    public static NailService createNew(Long salonId, Long categoryId, String name, String description,
+                                        BigDecimal price, Integer durationMinutes, String imageUrl) {
+        Instant now = Instant.now();
+        return new NailService(null, salonId, categoryId, name, description, price,
+                durationMinutes != null ? durationMinutes : 30, imageUrl, true, now, now);
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

@@ -71,4 +71,25 @@ public class BookingRepositoryAdapter implements BookingRepository {
                 .map(bookingMapper::toDomain)
                 .toList();
     }
+
+    @Override
+    public long countBySalonId(Long salonId) {
+        return springDataBookingRepository.countBySalonId(salonId);
+    }
+
+    @Override
+    public long countBySalonIdAndStatus(Long salonId, BookingStatus status) {
+        return springDataBookingRepository.countBySalonIdAndStatus(salonId, status != null ? status.name() : null);
+    }
+
+    @Override
+    public java.math.BigDecimal sumCompletedGrossBySalonIdAndPeriod(Long salonId, Instant start, Instant end) {
+        return springDataBookingRepository.sumCompletedGrossBySalonIdAndPeriod(salonId, start, end);
+    }
+
+    @Override
+    public long countDistinctCompletedCustomersBySalonIdAndPeriod(Long salonId, Instant start, Instant end) {
+        Long count = springDataBookingRepository.countDistinctCompletedCustomersBySalonIdAndPeriod(salonId, start, end);
+        return count != null ? count : 0L;
+    }
 }
