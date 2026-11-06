@@ -15,5 +15,9 @@ public interface UserRepository {
 
     boolean existsByEmail(String email);
 
+    java.util.List<User> findAll(int page, int pageSize);
+
+    long count();
+
     User save(User user);
 }

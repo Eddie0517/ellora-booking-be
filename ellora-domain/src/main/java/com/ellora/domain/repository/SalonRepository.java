@@ -18,5 +18,9 @@ public interface SalonRepository {
 
     List<Salon> findByOwnerId(UUID ownerId);
 
+    long countByStatus(SalonStatus status);
+
+    long count();
+
     Salon save(Salon salon);
 }

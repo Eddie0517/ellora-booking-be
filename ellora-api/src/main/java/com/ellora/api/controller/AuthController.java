@@ -1,6 +1,8 @@
 package com.ellora.api.controller;
 
 import com.ellora.application.feature.auth.ChangePasswordUseCase;
+import com.ellora.application.feature.auth.ConfirmForgotPasswordUseCase;
+import com.ellora.application.feature.auth.ForgotPasswordUseCase;
 import com.ellora.application.feature.auth.GetCurrentUserUseCase;
 import com.ellora.application.feature.auth.LoginUserUseCase;
 import com.ellora.application.feature.auth.LogoutUserUseCase;
@@ -9,6 +11,8 @@ import com.ellora.application.feature.auth.RegisterUserUseCase;
 import com.ellora.application.feature.auth.ResendVerificationUseCase;
 import com.ellora.application.feature.auth.VerifyEmailUseCase;
 import com.ellora.application.feature.auth.dto.ChangePasswordRequest;
+import com.ellora.application.feature.auth.dto.ConfirmForgotPasswordRequest;
+import com.ellora.application.feature.auth.dto.ForgotPasswordRequest;
 import com.ellora.application.feature.auth.dto.LoginRequest;
 import com.ellora.application.feature.auth.dto.RefreshTokenRequest;
 import com.ellora.application.feature.auth.dto.RegisterRequest;
@@ -48,6 +52,8 @@ public class AuthController {
     private final GetCurrentUserUseCase getCurrentUserUseCase;
     private final LogoutUserUseCase logoutUserUseCase;
     private final ChangePasswordUseCase changePasswordUseCase;
+    private final ForgotPasswordUseCase forgotPasswordUseCase;
+    private final ConfirmForgotPasswordUseCase confirmForgotPasswordUseCase;
 
     @PostMapping("/register")
     @Operation(summary = "Customer registration", description = "Registers a new customer account and sends 6-digit OTP verification email")
@@ -112,5 +118,19 @@ public class AuthController {
             @Valid @RequestBody ChangePasswordRequest request) {
         changePasswordUseCase.execute(userId, request);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/forgot-password")
+    @Operation(summary = "Forgot password request", description = "Sends 6-digit OTP code to user email if account exists")
+    public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        forgotPasswordUseCase.execute(request);
+        return ResponseEntity.ok(Map.of("message", "Nếu email tồn tại trong hệ thống, mã xác nhận đã được gửi đến hộp thư của bạn."));
+    }
+
+    @PostMapping("/confirm-forgot-password")
+    @Operation(summary = "Confirm forgot password", description = "Verifies 6-digit OTP code and updates account password")
+    public ResponseEntity<Map<String, String>> confirmForgotPassword(@Valid @RequestBody ConfirmForgotPasswordRequest request) {
+        confirmForgotPasswordUseCase.execute(request);
+        return ResponseEntity.ok(Map.of("message", "Mật khẩu của bạn đã được cập nhật thành công. Vui lòng đăng nhập lại."));
     }
 }

@@ -52,6 +52,16 @@ public class SalonRepositoryAdapter implements SalonRepository {
     }
 
     @Override
+    public long countByStatus(SalonStatus status) {
+        return springDataSalonRepository.countByStatus(status != null ? status.name() : null);
+    }
+
+    @Override
+    public long count() {
+        return springDataSalonRepository.count();
+    }
+
+    @Override
     public Salon save(Salon salon) {
         SalonEntity entity = salonMapper.toEntity(salon);
         SalonEntity saved = springDataSalonRepository.save(entity);

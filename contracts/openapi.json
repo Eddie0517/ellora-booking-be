@@ -34,6 +34,9 @@
     "name" : "Profile",
     "description" : "User profile compatibility endpoints"
   }, {
+    "name" : "Admin Portal",
+    "description" : "Endpoints for platform administrators: approve salons, moderate users, and view platform metrics"
+  }, {
     "name" : "Salons",
     "description" : "Endpoints for discovering salons, viewing service menus and staff members"
   } ],
@@ -798,6 +801,72 @@
         }
       }
     },
+    "/api/v1/auth/forgot-password" : {
+      "post" : {
+        "tags" : [ "Authentication" ],
+        "summary" : "Forgot password request",
+        "description" : "Sends 6-digit OTP code to user email if account exists",
+        "operationId" : "forgotPassword",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ForgotPasswordRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/confirm-forgot-password" : {
+      "post" : {
+        "tags" : [ "Authentication" ],
+        "summary" : "Confirm forgot password",
+        "description" : "Verifies 6-digit OTP code and updates account password",
+        "operationId" : "confirmForgotPassword",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ConfirmForgotPasswordRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/change-password" : {
       "post" : {
         "tags" : [ "Authentication" ],
@@ -817,6 +886,118 @@
         "responses" : {
           "200" : {
             "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/salons/{id}/reject" : {
+      "post" : {
+        "tags" : [ "Admin Portal" ],
+        "summary" : "Reject/suspend salon",
+        "description" : "Suspends or rejects a salon registration",
+        "operationId" : "rejectSalon",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/salons/{id}/approve" : {
+      "post" : {
+        "tags" : [ "Admin Portal" ],
+        "summary" : "Approve salon",
+        "description" : "Approves a pending salon and promotes owner to SALON_OWNER",
+        "operationId" : "approveSalon",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/users/{id}/lock" : {
+      "patch" : {
+        "tags" : [ "Admin Portal" ],
+        "summary" : "Lock/unlock user account",
+        "description" : "Locks or unlocks a user account and revokes active sessions",
+        "operationId" : "lockUser",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/LockUserRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminUserResponse"
+                }
+              }
+            }
           }
         },
         "security" : [ {
@@ -1083,6 +1264,113 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/UserProfileResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/users" : {
+      "get" : {
+        "tags" : [ "Admin Portal" ],
+        "summary" : "List all users",
+        "description" : "Returns paginated list of users across the platform",
+        "operationId" : "getUsers",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "pageSize",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PagedResultAdminUserResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/salons/pending" : {
+      "get" : {
+        "tags" : [ "Admin Portal" ],
+        "summary" : "List pending salons",
+        "description" : "Returns paginated list of salons waiting for administrator approval",
+        "operationId" : "getPendingSalons",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "pageSize",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PagedResultSalonDetailsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/dashboard" : {
+      "get" : {
+        "tags" : [ "Admin Portal" ],
+        "summary" : "Get platform metrics",
+        "description" : "Retrieves aggregated counts of salons, users, and overall gross revenue",
+        "operationId" : "getDashboard_1",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminDashboardResponse"
                 }
               }
             }
@@ -1778,6 +2066,32 @@
           }
         }
       },
+      "ForgotPasswordRequest" : {
+        "required" : [ "email" ],
+        "type" : "object",
+        "properties" : {
+          "email" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ConfirmForgotPasswordRequest" : {
+        "required" : [ "confirmationCode", "email", "newPassword" ],
+        "type" : "object",
+        "properties" : {
+          "email" : {
+            "type" : "string"
+          },
+          "confirmationCode" : {
+            "type" : "string"
+          },
+          "newPassword" : {
+            "maxLength" : 2147483647,
+            "minLength" : 8,
+            "type" : "string"
+          }
+        }
+      },
       "ChangePasswordRequest" : {
         "required" : [ "currentPassword", "newPassword" ],
         "type" : "object",
@@ -1789,6 +2103,50 @@
             "maxLength" : 2147483647,
             "minLength" : 8,
             "type" : "string"
+          }
+        }
+      },
+      "LockUserRequest" : {
+        "required" : [ "locked" ],
+        "type" : "object",
+        "properties" : {
+          "locked" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "AdminUserResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "fullName" : {
+            "type" : "string"
+          },
+          "phone" : {
+            "type" : "string"
+          },
+          "role" : {
+            "type" : "string"
+          },
+          "enabled" : {
+            "type" : "boolean"
+          },
+          "locked" : {
+            "type" : "boolean"
+          },
+          "emailVerifiedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
           }
         }
       },
@@ -1960,6 +2318,88 @@
           "averageRating" : {
             "type" : "number",
             "format" : "double"
+          }
+        }
+      },
+      "PagedResultAdminUserResponse" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AdminUserResponse"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PagedResultSalonDetailsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SalonDetailsResponse"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "AdminDashboardResponse" : {
+        "type" : "object",
+        "properties" : {
+          "totalSalons" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "pendingSalons" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "activeSalons" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalUsers" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalBookings" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalRevenue" : {
+            "type" : "number"
           }
         }
       },
