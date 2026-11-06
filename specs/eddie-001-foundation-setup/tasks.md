@@ -124,15 +124,15 @@
 
 ### Implementation for User Story 5
 
-- [ ] T035 [P] [US5] Create base characterization test harness with containerized PostgreSQL in `ellora-api/src/test/java/com/ellora/api/characterization/BaseCharacterizationTest.java`
-- [ ] T036 [P] [US5] Implement characterization test for User Registration flow in `ellora-api/src/test/java/com/ellora/api/characterization/AuthRegistrationCharacterizationTest.java`
-- [ ] T037 [P] [US5] Implement characterization test for User Login flow in `ellora-api/src/test/java/com/ellora/api/characterization/AuthLoginCharacterizationTest.java`
-- [ ] T038 [P] [US5] Implement characterization test for Salon Search flow in `ellora-api/src/test/java/com/ellora/api/characterization/SalonSearchCharacterizationTest.java`
-- [ ] T039 [P] [US5] Implement characterization test for Booking Creation flow in `ellora-api/src/test/java/com/ellora/api/characterization/BookingCreationCharacterizationTest.java`
-- [ ] T040 [P] [US5] Implement characterization test for Guest Booking flow in `ellora-api/src/test/java/com/ellora/api/characterization/GuestBookingCharacterizationTest.java`
-- [ ] T041 [P] [US5] Implement characterization test for Booking Status Transition flow in `ellora-api/src/test/java/com/ellora/api/characterization/BookingStatusTransitionCharacterizationTest.java`
-- [ ] T042 [P] [US5] Implement characterization test for Salon Review Submission in `ellora-api/src/test/java/com/ellora/api/characterization/SalonReviewCharacterizationTest.java`
-- [ ] T043 [P] [US5] Implement characterization test for Owner Booking Management in `ellora-api/src/test/java/com/ellora/api/characterization/OwnerBookingCharacterizationTest.java`
+- [x] T035 [P] [US5] Create base characterization test harness with containerized PostgreSQL in `ellora-api/src/test/java/com/ellora/api/characterization/BaseCharacterizationTest.java`
+- [x] T036 [P] [US5] Implement characterization test for User Registration flow in `ellora-api/src/test/java/com/ellora/api/characterization/AuthRegistrationCharacterizationTest.java`
+- [x] T037 [P] [US5] Implement characterization test for User Login flow in `ellora-api/src/test/java/com/ellora/api/characterization/AuthLoginCharacterizationTest.java`
+- [x] T038 [P] [US5] Implement characterization test for Salon Search flow in `ellora-api/src/test/java/com/ellora/api/characterization/SalonSearchCharacterizationTest.java`
+- [x] T039 [P] [US5] Implement characterization test for Booking Creation flow in `ellora-api/src/test/java/com/ellora/api/characterization/BookingCreationCharacterizationTest.java`
+- [x] T040 [P] [US5] Implement characterization test for Guest Booking flow in `ellora-api/src/test/java/com/ellora/api/characterization/GuestBookingCharacterizationTest.java`
+- [x] T041 [P] [US5] Implement characterization test for Booking Status Transition flow in `ellora-api/src/test/java/com/ellora/api/characterization/BookingStatusTransitionCharacterizationTest.java`
+- [x] T042 [P] [US5] Implement characterization test for Salon Review Submission in `ellora-api/src/test/java/com/ellora/api/characterization/SalonReviewCharacterizationTest.java`
+- [x] T043 [P] [US5] Implement characterization test for Owner Booking Management in `ellora-api/src/test/java/com/ellora/api/characterization/OwnerBookingCharacterizationTest.java`
 
 **Checkpoint**: 8 core user journeys verified; regression safety net established.
 
