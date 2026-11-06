@@ -23,7 +23,7 @@ if (Get-Command mvn -ErrorAction SilentlyContinue) {
     mvn test -Dtest=OpenApiExportTest "-Dsurefire.failIfNoSpecifiedTests=false" -pl ellora-api -am
 } else {
     Write-Host "Executing OpenApiExportTest via containerized Maven (backend)..." -ForegroundColor Yellow
-    docker compose run --rm backend mvn test -Dtest=OpenApiExportTest "-Dsurefire.failIfNoSpecifiedTests=false" -pl ellora-api -am
+    docker compose run --rm -u root backend mvn test -Dtest=OpenApiExportTest "-Dsurefire.failIfNoSpecifiedTests=false" -pl ellora-api -am
 }
 
 if ($LASTEXITCODE -ne 0) {

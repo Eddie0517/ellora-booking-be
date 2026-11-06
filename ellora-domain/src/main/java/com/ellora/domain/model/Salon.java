@@ -77,6 +77,12 @@ public class Salon {
         this.updatedAt = Instant.now();
     }
 
+    public void updateRatingStats(BigDecimal averageRating, int totalReviews) {
+        this.averageRating = averageRating != null ? averageRating : BigDecimal.ZERO;
+        this.totalReviews = totalReviews;
+        this.updatedAt = Instant.now();
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
