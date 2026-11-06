@@ -1,0 +1,10 @@
+{
+  "owner": "eddie",
+  "number": 1,
+  "slug": "foundation-setup",
+  "branch": "feat/foundation-setup",
+  "status": "open",
+  "services": [],
+  "description": "Foundation setup for Ellora backend refactor: Clean Architecture 4-module skeleton, Docker Compose, Flyway baseline, OpenAPI contracts, and characterization tests",
+  "opened_at": "2026-11-06"
+}
