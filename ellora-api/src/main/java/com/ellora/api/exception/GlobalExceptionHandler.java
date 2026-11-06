@@ -68,15 +68,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessRuleException.class)
     public ResponseEntity<ProblemDetail> handleBusinessRuleException(
             BusinessRuleException ex, HttpServletRequest request) {
-        log.warn("Business rule violation at {}: {}", request.getRequestURI(), ex.getMessage());
+        log.warn("Business rule violation [{}] at {}: {}", ex.getErrorCode(), request.getRequestURI(), ex.getMessage());
+        HttpStatus status = "INVALID_CREDENTIALS".equals(ex.getErrorCode())
+                ? HttpStatus.UNAUTHORIZED
+                : HttpStatus.UNPROCESSABLE_ENTITY;
+
         ProblemDetail problemDetail =
-                ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
-        problemDetail.setType(URI.create("https://ellora.vn/errors/business-rule-violation"));
-        problemDetail.setTitle("Vi phạm quy tắc nghiệp vụ");
+                ProblemDetail.forStatusAndDetail(status, ex.getMessage());
+        problemDetail.setType(URI.create("https://ellora.vn/errors/" + (ex.getErrorCode() != null ? ex.getErrorCode().toLowerCase() : "business-rule-violation")));
+        problemDetail.setTitle(status == HttpStatus.UNAUTHORIZED ? "Thông tin xác thực không hợp lệ" : "Vi phạm quy tắc nghiệp vụ");
         problemDetail.setInstance(URI.create(request.getRequestURI()));
         problemDetail.setProperty("traceId", UUID.randomUUID().toString());
 
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+        return ResponseEntity.status(status)
                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                 .body(problemDetail);
     }

@@ -22,6 +22,16 @@
             <artifactId>ellora-domain</artifactId>
         </dependency>
 
+        <!-- Spring Context & Transactions for Use Cases -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+        </dependency>
+
         <!-- Bean Validation API -->
         <dependency>
             <groupId>jakarta.validation</groupId>

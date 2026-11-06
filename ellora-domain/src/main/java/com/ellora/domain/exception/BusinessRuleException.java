@@ -9,7 +9,15 @@ public class BusinessRuleException extends DomainException {
         super(message);
     }
 
+    public BusinessRuleException(String errorCode, String message) {
+        super(errorCode, message);
+    }
+
     public BusinessRuleException(String message, Throwable cause) {
         super(message, cause);
+    }
+
+    public BusinessRuleException(String errorCode, String message, Throwable cause) {
+        super(errorCode, message, cause);
     }
 }
