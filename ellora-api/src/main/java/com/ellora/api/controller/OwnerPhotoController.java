@@ -108,4 +108,37 @@ public class OwnerPhotoController {
         manageOwnerPhotosUseCase.removeGallery(getOwnerId(principal), url);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping(value = "/showcase/{slotIndex}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Upload photo for a specific showcase slot (0-4)")
+    public ResponseEntity<List<String>> uploadShowcaseSlot(
+            @AuthenticationPrincipal Object principal,
+            @PathVariable int slotIndex,
+            @RequestParam("file") MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessRuleException("INVALID_FILE", "Vui lòng chọn tệp tin hình ảnh");
+        }
+        try {
+            List<String> list = manageOwnerPhotosUseCase.uploadShowcaseSlot(
+                    getOwnerId(principal),
+                    slotIndex,
+                    file.getOriginalFilename(),
+                    file.getInputStream(),
+                    file.getSize(),
+                    file.getContentType()
+            );
+            return ResponseEntity.status(HttpStatus.CREATED).body(list);
+        } catch (IOException e) {
+            throw new BusinessRuleException("FILE_READ_ERROR", "Không thể đọc dữ liệu hình ảnh");
+        }
+    }
+
+    @DeleteMapping("/showcase/{slotIndex}")
+    @Operation(summary = "Remove photo from a showcase slot (0-4)")
+    public ResponseEntity<List<String>> removeShowcaseSlot(
+            @AuthenticationPrincipal Object principal,
+            @PathVariable int slotIndex) {
+        List<String> list = manageOwnerPhotosUseCase.removeShowcaseSlot(getOwnerId(principal), slotIndex);
+        return ResponseEntity.ok(list);
+    }
 }

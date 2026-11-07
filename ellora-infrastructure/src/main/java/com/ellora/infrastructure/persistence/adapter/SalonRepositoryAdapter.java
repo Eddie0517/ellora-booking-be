@@ -29,7 +29,10 @@ public class SalonRepositoryAdapter implements SalonRepository {
     @Override
     public List<Salon> findByStatus(SalonStatus status, int offset, int limit) {
         int pageNumber = offset / Math.max(1, limit);
-        Page<SalonEntity> page = springDataSalonRepository.findByStatus(status.name(), PageRequest.of(pageNumber, limit));
+        Page<SalonEntity> page = springDataSalonRepository.findByStatus(
+                status.name(),
+                PageRequest.of(pageNumber, limit, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "id"))
+        );
         return page.getContent().stream().map(salonMapper::toDomain).toList();
     }
 
@@ -68,6 +71,15 @@ public class SalonRepositoryAdapter implements SalonRepository {
     @Override
     public List<Salon> findAll() {
         return springDataSalonRepository.findAll().stream().map(salonMapper::toDomain).toList();
+    }
+
+    @Override
+    public List<Salon> findAll(int offset, int limit) {
+        int pageNumber = offset / Math.max(1, limit);
+        Page<SalonEntity> page = springDataSalonRepository.findAll(
+                PageRequest.of(pageNumber, limit, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "id"))
+        );
+        return page.getContent().stream().map(salonMapper::toDomain).toList();
     }
 
     @Override

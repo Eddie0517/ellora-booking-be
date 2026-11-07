@@ -24,5 +24,7 @@ public interface SalonRepository {
 
     List<Salon> findAll();
 
+    List<Salon> findAll(int offset, int limit);
+
     Salon save(Salon salon);
 }

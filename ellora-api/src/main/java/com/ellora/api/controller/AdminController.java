@@ -62,12 +62,13 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/salons/pending")
-    @Operation(summary = "List pending salons", description = "Returns paginated list of salons waiting for administrator approval")
+    @GetMapping({"/salons/pending", "/salons"})
+    @Operation(summary = "List salons for approval/history", description = "Returns paginated list of salons with optional status filter (ALL, PENDING_APPROVAL, ACTIVE, SUSPENDED, REJECTED)")
     public ResponseEntity<PagedResult<SalonDetailsResponse>> getPendingSalons(
+            @RequestParam(required = false, defaultValue = "PENDING_APPROVAL") String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
-        PagedResult<SalonDetailsResponse> response = getPendingSalonsUseCase.execute(page, pageSize);
+        PagedResult<SalonDetailsResponse> response = getPendingSalonsUseCase.execute(status, page, pageSize);
         return ResponseEntity.ok(response);
     }
 

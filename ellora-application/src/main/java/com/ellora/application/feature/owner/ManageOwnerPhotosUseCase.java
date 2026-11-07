@@ -174,5 +174,47 @@ public class ManageOwnerPhotosUseCase {
         salonRepository.save(salon);
     }
 
+    @Transactional
+    public List<String> uploadShowcaseSlot(UUID ownerId, int slotIndex, String filename, InputStream inputStream, long size, String contentType) {
+        if (slotIndex < 0 || slotIndex >= 5) {
+            throw new BusinessRuleException("INVALID_SLOT", "Vị trí ảnh khung showcase chỉ từ 0 đến 4");
+        }
+        Salon salon = getOwnedSalon(ownerId);
+        String url = imageStorage.uploadImage("ellora/showcase", filename, inputStream, size, contentType);
+
+        List<String> list = new ArrayList<>(salon.getImageUrls());
+        while (list.size() <= slotIndex) {
+            list.add("");
+        }
+        list.set(slotIndex, url);
+
+        salon.setImageUrls(list);
+        salonRepository.save(salon);
+
+        salonChangeRepository.save(new SalonChange(
+                null, salon.getId(), "SHOWCASE", "{}", salon.getLogoUrl(), salon.getLogoUrl(),
+                null, null, "APPROVED", Instant.now(), ownerId, Instant.now()
+        ));
+        return list;
+    }
+
+    @Transactional
+    public List<String> removeShowcaseSlot(UUID ownerId, int slotIndex) {
+        if (slotIndex < 0 || slotIndex >= 5) {
+            throw new BusinessRuleException("INVALID_SLOT", "Vị trí ảnh khung showcase chỉ từ 0 đến 4");
+        }
+        Salon salon = getOwnedSalon(ownerId);
+        List<String> list = new ArrayList<>(salon.getImageUrls());
+        if (slotIndex < list.size()) {
+            list.set(slotIndex, "");
+            while (!list.isEmpty() && list.get(list.size() - 1).isBlank()) {
+                list.remove(list.size() - 1);
+            }
+            salon.setImageUrls(list);
+            salonRepository.save(salon);
+        }
+        return list;
+    }
+
     public record UploadFileInput(String filename, InputStream inputStream, long size, String contentType) {}
 }

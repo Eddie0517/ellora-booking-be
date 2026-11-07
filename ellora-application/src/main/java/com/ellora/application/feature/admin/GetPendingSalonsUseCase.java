@@ -18,12 +18,31 @@ public class GetPendingSalonsUseCase {
 
     @Transactional(readOnly = true)
     public PagedResult<SalonDetailsResponse> execute(int page, int pageSize) {
+        return execute("PENDING_APPROVAL", page, pageSize);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResult<SalonDetailsResponse> execute(String status, int page, int pageSize) {
         int normalizedPage = Math.max(page, 0);
         int normalizedSize = (pageSize <= 0 || pageSize > 100) ? 20 : pageSize;
         int offset = normalizedPage * normalizedSize;
 
-        List<Salon> salons = salonRepository.findByStatus(SalonStatus.PENDING_APPROVAL, offset, normalizedSize);
-        long totalItems = salonRepository.countByStatus(SalonStatus.PENDING_APPROVAL);
+        List<Salon> salons;
+        long totalItems;
+
+        if (status == null || status.isBlank() || "ALL".equalsIgnoreCase(status.trim())) {
+            salons = salonRepository.findAll(offset, normalizedSize);
+            totalItems = salonRepository.count();
+        } else {
+            SalonStatus salonStatus;
+            try {
+                salonStatus = SalonStatus.valueOf(status.trim().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                salonStatus = SalonStatus.PENDING_APPROVAL;
+            }
+            salons = salonRepository.findByStatus(salonStatus, offset, normalizedSize);
+            totalItems = salonRepository.countByStatus(salonStatus);
+        }
 
         List<SalonDetailsResponse> items = salons.stream().map(s -> new SalonDetailsResponse(
                 s.getId(),
@@ -41,7 +60,8 @@ public class GetPendingSalonsUseCase {
                 s.getLongitude(),
                 s.getAverageRating(),
                 s.getTotalReviews(),
-                s.getSubscriptionTier()
+                s.getSubscriptionTier(),
+                s.getImageUrls()
         )).toList();
 
         return PagedResult.of(items, normalizedPage, normalizedSize, totalItems);
