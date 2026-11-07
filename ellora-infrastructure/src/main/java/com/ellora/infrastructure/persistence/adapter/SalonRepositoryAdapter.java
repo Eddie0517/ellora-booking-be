@@ -66,6 +66,11 @@ public class SalonRepositoryAdapter implements SalonRepository {
     }
 
     @Override
+    public List<Salon> findAll() {
+        return springDataSalonRepository.findAll().stream().map(salonMapper::toDomain).toList();
+    }
+
+    @Override
     public Salon save(Salon salon) {
         SalonEntity entity = salonMapper.toEntity(salon);
         SalonEntity saved = springDataSalonRepository.save(entity);

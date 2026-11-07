@@ -22,5 +22,7 @@ public interface SalonRepository {
 
     long count();
 
+    List<Salon> findAll();
+
     Salon save(Salon salon);
 }

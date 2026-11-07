@@ -55,6 +55,11 @@ public class ReviewRepositoryAdapter implements ReviewRepository {
     }
 
     @Override
+    public void delete(Long id) {
+        springDataReviewRepository.deleteById(id);
+    }
+
+    @Override
     public Double calculateAverageRatingBySalonId(Long salonId) {
         return springDataReviewRepository.calculateAverageRatingBySalonId(salonId);
     }

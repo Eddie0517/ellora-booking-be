@@ -83,6 +83,12 @@ public class SalonEntity {
     @Builder.Default
     private Integer totalReviews = 0;
 
+    @jakarta.persistence.ElementCollection(fetch = jakarta.persistence.FetchType.EAGER)
+    @jakarta.persistence.CollectionTable(name = "salon_images", joinColumns = @jakarta.persistence.JoinColumn(name = "salon_id"))
+    @jakarta.persistence.Column(name = "image_url")
+    @Builder.Default
+    private java.util.List<String> imageUrls = new java.util.ArrayList<>();
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

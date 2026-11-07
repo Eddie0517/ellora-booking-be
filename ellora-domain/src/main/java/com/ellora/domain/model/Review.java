@@ -79,6 +79,27 @@ public class Review {
         this.updatedAt = Instant.now();
     }
 
+    public void adminEdit(int rating, String comment) {
+        if (rating < 1 || rating > 5) {
+            throw new BusinessRuleException("INVALID_RATING", "Điểm đánh giá phải từ 1 đến 5 sao");
+        }
+        this.rating = rating;
+        this.comment = comment != null ? comment.trim() : null;
+        this.updatedAt = Instant.now();
+    }
+
+    public void adminReply(String reply) {
+        this.salonReply = reply != null ? reply.trim() : null;
+        this.salonRepliedAt = Instant.now();
+        this.updatedAt = Instant.now();
+    }
+
+    public void adminDeleteReply() {
+        this.salonReply = null;
+        this.salonRepliedAt = null;
+        this.updatedAt = Instant.now();
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

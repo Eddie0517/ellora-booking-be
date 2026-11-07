@@ -48,7 +48,8 @@ class FlywayMigrationTest {
                 "platform_support_contacts",
                 "refresh_tokens",
                 "email_verification_tokens",
-                "password_reset_tokens");
+                "password_reset_tokens",
+                "salon_images");
 
         Set<String> actualTables = new HashSet<>();
         try (Connection conn = dataSource.getConnection();
@@ -61,7 +62,7 @@ class FlywayMigrationTest {
             }
         }
 
-        assertEquals(24, actualTables.size(), "Should have exactly 24 tables created by Flyway migrations");
-        assertTrue(actualTables.containsAll(expectedTables), "Should contain all 24 expected tables");
+        assertEquals(25, actualTables.size(), "Should have exactly 25 tables created by Flyway migrations");
+        assertTrue(actualTables.containsAll(expectedTables), "Should contain all 25 expected tables");
     }
 }

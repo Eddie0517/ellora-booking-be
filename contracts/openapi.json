@@ -28,17 +28,23 @@
     "name" : "Profile",
     "description" : "User profile compatibility endpoints"
   }, {
+    "name" : "Owner Photos",
+    "description" : "Endpoints for salon owners to manage salon cover, gallery, services, and employee photos"
+  }, {
     "name" : "Service Categories",
     "description" : "Endpoints for browsing and managing nail service categories"
+  }, {
+    "name" : "Owner Billing",
+    "description" : "Endpoints for salon owners to view monthly platform bills, fees, and QR payment details"
+  }, {
+    "name" : "Admin Content",
+    "description" : "Endpoints for platform admin to moderate salon media and user reviews"
   }, {
     "name" : "Salons",
     "description" : "Endpoints for discovering salons, viewing service menus and staff members"
   }, {
     "name" : "System",
     "description" : "System liveness and diagnostics endpoints"
-  }, {
-    "name" : "Admin Billing",
-    "description" : "Payment QR configuration for salon subscription requests"
   }, {
     "name" : "Admin Salon Changes",
     "description" : "Endpoints for moderating salon profile update requests"
@@ -48,6 +54,9 @@
   }, {
     "name" : "Authentication",
     "description" : "Endpoints for user registration, OTP email verification, authentication and token refresh"
+  }, {
+    "name" : "Admin Billing",
+    "description" : "Endpoints for platform admin to manage fee rates, payment QR, and reconcile salon statements"
   }, {
     "name" : "Admin Portal",
     "description" : "Endpoints for platform administrators: approve salons, moderate users, and view platform metrics"
@@ -531,6 +540,170 @@
         } ]
       }
     },
+    "/api/v1/admin/content/reviews/{id}" : {
+      "put" : {
+        "tags" : [ "Admin Content" ],
+        "summary" : "Admin edits customer review",
+        "operationId" : "editReview",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AdminEditReviewRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Admin Content" ],
+        "summary" : "Admin deletes review",
+        "operationId" : "deleteReview",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/content/reviews/{id}/reply" : {
+      "put" : {
+        "tags" : [ "Admin Content" ],
+        "summary" : "Admin edits salon reply",
+        "operationId" : "replyReview",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AdminReplyReviewRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Admin Content" ],
+        "summary" : "Admin deletes salon reply",
+        "operationId" : "deleteReply",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/billing/config" : {
+      "get" : {
+        "tags" : [ "Admin Billing" ],
+        "summary" : "Get platform billing configuration and fee rates",
+        "operationId" : "getConfig",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BillingConfigResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "Admin Billing" ],
+        "summary" : "Update platform fee percentage for next month",
+        "operationId" : "updateRate",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateBillingRateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BillingConfigResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/webhooks/payos" : {
       "post" : {
         "tags" : [ "pay-os-webhook-controller" ],
@@ -977,6 +1150,142 @@
                 "schema" : {
                   "type" : "object",
                   "additionalProperties" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/owner/photos/{kind}/{id}" : {
+      "post" : {
+        "tags" : [ "Owner Photos" ],
+        "summary" : "Upload photo for cover, service, or employee",
+        "operationId" : "uploadPhoto",
+        "parameters" : [ {
+          "name" : "kind",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "required" : [ "file" ],
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Owner Photos" ],
+        "summary" : "Delete photo for cover, service, or employee",
+        "operationId" : "removePhoto",
+        "parameters" : [ {
+          "name" : "kind",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/owner/photos/gallery/{id}/batch" : {
+      "post" : {
+        "tags" : [ "Owner Photos" ],
+        "summary" : "Upload multiple photos to salon gallery",
+        "operationId" : "uploadGallery",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "required" : [ "files" ],
+                "type" : "object",
+                "properties" : {
+                  "files" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string",
+                      "format" : "binary"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
                     "type" : "string"
                   }
                 }
@@ -1654,6 +1963,208 @@
         } ]
       }
     },
+    "/api/v1/admin/content/salons/{salonId}/photos/{kind}/{id}" : {
+      "post" : {
+        "tags" : [ "Admin Content" ],
+        "summary" : "Upload or replace photo for a salon",
+        "operationId" : "uploadPhoto_1",
+        "parameters" : [ {
+          "name" : "salonId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "kind",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "oldUrl",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "required" : [ "file" ],
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Admin Content" ],
+        "summary" : "Remove photo from salon",
+        "operationId" : "removePhoto_1",
+        "parameters" : [ {
+          "name" : "salonId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "kind",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "url",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/billing/statements/{salonId}/remind" : {
+      "post" : {
+        "tags" : [ "Admin Billing" ],
+        "summary" : "Send payment reminder to a salon",
+        "operationId" : "remindPayment",
+        "parameters" : [ {
+          "name" : "salonId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "month",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/billing/statements/{salonId}/confirm" : {
+      "post" : {
+        "tags" : [ "Admin Billing" ],
+        "summary" : "Confirm payment received from a salon",
+        "operationId" : "confirmPayment",
+        "parameters" : [ {
+          "name" : "salonId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "month",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ConfirmBillPaymentRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlatformBillResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/admin/billing/qr" : {
       "get" : {
         "tags" : [ "Admin Billing" ],
@@ -2280,6 +2791,36 @@
         } ]
       }
     },
+    "/api/v1/owner/billing" : {
+      "get" : {
+        "tags" : [ "Owner Billing" ],
+        "summary" : "Get owner salon monthly platform fee statement and payment info",
+        "operationId" : "getOwnerBill",
+        "parameters" : [ {
+          "name" : "month",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlatformBillResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/bookings/{id}" : {
       "get" : {
         "tags" : [ "Bookings" ],
@@ -2640,6 +3181,127 @@
         } ]
       }
     },
+    "/api/v1/admin/content/salons" : {
+      "get" : {
+        "tags" : [ "Admin Content" ],
+        "summary" : "List salons for content moderation",
+        "operationId" : "listSalons",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PagedResultContentSalonResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/content/salons/{id}" : {
+      "get" : {
+        "tags" : [ "Admin Content" ],
+        "summary" : "Get salon media details for content moderation",
+        "operationId" : "getSalonDetail",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ContentDetailResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/content/salons/{id}/reviews" : {
+      "get" : {
+        "tags" : [ "Admin Content" ],
+        "summary" : "Get salon reviews for moderation",
+        "operationId" : "getSalonReviews_1",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PagedResultReviewDetailsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/admin/booking-disputes" : {
       "get" : {
         "tags" : [ "admin-booking-dispute-controller" ],
@@ -2719,6 +3381,54 @@
         } ]
       }
     },
+    "/api/v1/admin/billing/statements" : {
+      "get" : {
+        "tags" : [ "Admin Billing" ],
+        "summary" : "List salon billing statements for a specific month",
+        "operationId" : "getStatements",
+        "parameters" : [ {
+          "name" : "month",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PagedResultPlatformBillResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/profiles/me" : {
       "get" : {
         "tags" : [ "Profile" ],
@@ -2753,6 +3463,29 @@
           "schema" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/owner/photos/gallery" : {
+      "delete" : {
+        "tags" : [ "Owner Photos" ],
+        "summary" : "Remove photo from salon gallery",
+        "operationId" : "removeGallery",
+        "parameters" : [ {
+          "name" : "url",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
           }
         } ],
         "responses" : {
@@ -2938,6 +3671,12 @@
           },
           "subscriptionTier" : {
             "type" : "string"
+          },
+          "imageUrls" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         }
       },
@@ -3296,6 +4035,63 @@
           },
           "active" : {
             "type" : "boolean"
+          }
+        }
+      },
+      "AdminEditReviewRequest" : {
+        "type" : "object",
+        "properties" : {
+          "rating" : {
+            "maximum" : 5,
+            "minimum" : 1,
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "comment" : {
+            "maxLength" : 1000,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }
+      },
+      "AdminReplyReviewRequest" : {
+        "type" : "object",
+        "properties" : {
+          "reply" : {
+            "maxLength" : 1000,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }
+      },
+      "UpdateBillingRateRequest" : {
+        "required" : [ "percent" ],
+        "type" : "object",
+        "properties" : {
+          "percent" : {
+            "maximum" : 100.0,
+            "exclusiveMaximum" : false,
+            "minimum" : 0.0,
+            "exclusiveMinimum" : false,
+            "type" : "number"
+          }
+        }
+      },
+      "BillingConfigResponse" : {
+        "type" : "object",
+        "properties" : {
+          "currentPercent" : {
+            "type" : "number"
+          },
+          "nextPercent" : {
+            "type" : "number"
+          },
+          "effectiveMonth" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "qrUrl" : {
+            "type" : "string"
           }
         }
       },
@@ -3892,6 +4688,68 @@
           },
           "iconUrl" : {
             "type" : "string"
+          }
+        }
+      },
+      "ConfirmBillPaymentRequest" : {
+        "required" : [ "expectedDue" ],
+        "type" : "object",
+        "properties" : {
+          "expectedDue" : {
+            "minimum" : 0.0,
+            "exclusiveMinimum" : false,
+            "type" : "number"
+          }
+        }
+      },
+      "PlatformBillResponse" : {
+        "type" : "object",
+        "properties" : {
+          "salonId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "salonName" : {
+            "type" : "string"
+          },
+          "month" : {
+            "type" : "string"
+          },
+          "gross" : {
+            "type" : "number"
+          },
+          "percent" : {
+            "type" : "number"
+          },
+          "fee" : {
+            "type" : "number"
+          },
+          "paid" : {
+            "type" : "number"
+          },
+          "due" : {
+            "type" : "number"
+          },
+          "dueDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "transferContent" : {
+            "type" : "string"
+          },
+          "qrUrl" : {
+            "type" : "string"
+          },
+          "paidAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "remindedAt" : {
+            "type" : "string",
+            "format" : "date-time"
           }
         }
       },
@@ -4532,6 +5390,90 @@
           }
         }
       },
+      "ContentSalonResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PagedResultContentSalonResponse" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ContentSalonResponse"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "ContentDetailResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "photos" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ContentPhotoItem"
+            }
+          },
+          "gallery" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "ContentPhotoItem" : {
+        "type" : "object",
+        "properties" : {
+          "kind" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "url" : {
+            "type" : "string"
+          }
+        }
+      },
       "PagedResultBookingDisputeResponse" : {
         "type" : "object",
         "properties" : {
@@ -4539,6 +5481,33 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/BookingDisputeResponse"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PagedResultPlatformBillResponse" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PlatformBillResponse"
             }
           },
           "page" : {

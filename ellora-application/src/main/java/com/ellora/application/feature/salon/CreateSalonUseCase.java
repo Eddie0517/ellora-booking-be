@@ -60,7 +60,8 @@ public class CreateSalonUseCase {
                 saved.getLongitude(),
                 saved.getAverageRating(),
                 saved.getTotalReviews(),
-                saved.getSubscriptionTier()
+                saved.getSubscriptionTier(),
+                saved.getImageUrls()
         );
     }
 }

@@ -57,7 +57,8 @@ public class UpdateOwnerSalonUseCase {
                 savedSalon.getLongitude(),
                 savedSalon.getAverageRating(),
                 savedSalon.getTotalReviews(),
-                savedSalon.getSubscriptionTier()
+                savedSalon.getSubscriptionTier(),
+                savedSalon.getImageUrls()
         );
     }
 }

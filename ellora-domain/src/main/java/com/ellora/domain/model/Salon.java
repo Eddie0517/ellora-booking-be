@@ -25,6 +25,7 @@ public class Salon {
     private Instant subscriptionExpiresAt;
     private BigDecimal averageRating;
     private Integer totalReviews;
+    private java.util.List<String> imageUrls = new java.util.ArrayList<>();
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -35,6 +36,16 @@ public class Salon {
                  SalonStatus status, Double latitude, Double longitude, String subscriptionTier,
                  Instant subscriptionStartsAt, Instant subscriptionExpiresAt, BigDecimal averageRating,
                  Integer totalReviews, Instant createdAt, Instant updatedAt) {
+        this(id, ownerId, name, description, address, city, district, phone, email, logoUrl,
+                status, latitude, longitude, subscriptionTier, subscriptionStartsAt, subscriptionExpiresAt,
+                averageRating, totalReviews, new java.util.ArrayList<>(), createdAt, updatedAt);
+    }
+
+    public Salon(Long id, UUID ownerId, String name, String description, String address,
+                 String city, String district, String phone, String email, String logoUrl,
+                 SalonStatus status, Double latitude, Double longitude, String subscriptionTier,
+                 Instant subscriptionStartsAt, Instant subscriptionExpiresAt, BigDecimal averageRating,
+                 Integer totalReviews, java.util.List<String> imageUrls, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.ownerId = ownerId;
         this.name = name;
@@ -53,6 +64,7 @@ public class Salon {
         this.subscriptionExpiresAt = subscriptionExpiresAt;
         this.averageRating = averageRating != null ? averageRating : BigDecimal.ZERO;
         this.totalReviews = totalReviews != null ? totalReviews : 0;
+        this.imageUrls = imageUrls != null ? new java.util.ArrayList<>(imageUrls) : new java.util.ArrayList<>();
         this.createdAt = createdAt != null ? createdAt : Instant.now();
         this.updatedAt = updatedAt != null ? updatedAt : Instant.now();
     }
@@ -149,6 +161,9 @@ public class Salon {
 
     public Integer getTotalReviews() { return totalReviews; }
     public void setTotalReviews(Integer totalReviews) { this.totalReviews = totalReviews; }
+
+    public java.util.List<String> getImageUrls() { return imageUrls; }
+    public void setImageUrls(java.util.List<String> imageUrls) { this.imageUrls = imageUrls != null ? new java.util.ArrayList<>(imageUrls) : new java.util.ArrayList<>(); }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

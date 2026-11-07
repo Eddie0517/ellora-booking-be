@@ -21,5 +21,7 @@ public interface ReviewRepository {
 
     long countBySalonId(Long salonId);
 
+    void delete(Long id);
+
     Double calculateAverageRatingBySalonId(Long salonId);
 }

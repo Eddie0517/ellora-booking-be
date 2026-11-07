@@ -43,6 +43,7 @@ public class SalonMapper {
                 entity.getSubscriptionExpiresAt(),
                 entity.getAverageRating(),
                 entity.getTotalReviews(),
+                entity.getImageUrls() != null ? entity.getImageUrls() : new java.util.ArrayList<>(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );
@@ -72,6 +73,7 @@ public class SalonMapper {
                 .subscriptionExpiresAt(domain.getSubscriptionExpiresAt())
                 .averageRating(domain.getAverageRating())
                 .totalReviews(domain.getTotalReviews())
+                .imageUrls(domain.getImageUrls() != null ? new java.util.ArrayList<>(domain.getImageUrls()) : new java.util.ArrayList<>())
                 .createdAt(domain.getCreatedAt())
                 .updatedAt(domain.getUpdatedAt())
                 .build();
