@@ -21,6 +21,15 @@ public abstract class BaseCharacterizationTest {
     @Autowired
     protected JdbcTemplate jdbcTemplate;
 
+    @Autowired(required = false)
+    protected jakarta.persistence.EntityManager entityManager;
+
+    protected void clearPersistenceContext() {
+        if (entityManager != null) {
+            entityManager.clear();
+        }
+    }
+
     protected UUID insertUser(String email, String passwordHash, String fullName, String phone, String role) {
         UUID id = UUID.randomUUID();
         jdbcTemplate.update(

@@ -57,6 +57,7 @@ class MyBookingsIntegrationTest extends BaseCharacterizationTest {
 
         jdbcTemplate.update("UPDATE bookings SET status='COMPLETED', completed_at=NOW(), "
                 + "completion_confirmation='AWAITING_CUSTOMER', completion_version=1 WHERE id=?", booking);
+        clearPersistenceContext();
         mockMvc.perform(post("/api/v1/bookings/" + booking + "/completion-response")
                         .header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"completed\":false,\"completionVersion\":1,\"reason\":\"Chưa hoàn tất\"}"))

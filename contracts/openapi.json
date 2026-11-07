@@ -16,17 +16,32 @@
     "name" : "Reviews",
     "description" : "Endpoints for creating reviews, viewing salon reviews, and salon owner replies"
   }, {
-    "name" : "System",
-    "description" : "System liveness and diagnostics endpoints"
+    "name" : "Support Contact",
+    "description" : "Endpoints for platform support contact information"
   }, {
     "name" : "Bookings",
     "description" : "Endpoints for scheduling appointments, retrieving booking details, and updating status"
   }, {
+    "name" : "Owner Portal",
+    "description" : "Endpoints for salon owners: manage salon profile, services, employees, and view business analytics"
+  }, {
+    "name" : "Profile",
+    "description" : "User profile compatibility endpoints"
+  }, {
+    "name" : "Service Categories",
+    "description" : "Endpoints for browsing and managing nail service categories"
+  }, {
+    "name" : "Salons",
+    "description" : "Endpoints for discovering salons, viewing service menus and staff members"
+  }, {
+    "name" : "System",
+    "description" : "System liveness and diagnostics endpoints"
+  }, {
     "name" : "Admin Billing",
     "description" : "Payment QR configuration for salon subscription requests"
   }, {
-    "name" : "Owner Portal",
-    "description" : "Endpoints for salon owners: manage salon profile, services, employees, and view business analytics"
+    "name" : "Admin Salon Changes",
+    "description" : "Endpoints for moderating salon profile update requests"
   }, {
     "name" : "Media",
     "description" : "Endpoints for uploading and managing media assets via Cloudinary"
@@ -34,17 +49,11 @@
     "name" : "Authentication",
     "description" : "Endpoints for user registration, OTP email verification, authentication and token refresh"
   }, {
-    "name" : "Profile",
-    "description" : "User profile compatibility endpoints"
-  }, {
     "name" : "Admin Portal",
     "description" : "Endpoints for platform administrators: approve salons, moderate users, and view platform metrics"
   }, {
     "name" : "Salon Subscriptions",
     "description" : "Salon plans, subscription requests, and payment reconciliation"
-  }, {
-    "name" : "Salons",
-    "description" : "Endpoints for discovering salons, viewing service menus and staff members"
   } ],
   "paths" : {
     "/api/v1/owner/services/{id}" : {
@@ -385,6 +394,39 @@
         } ]
       }
     },
+    "/api/v1/admin/support/contact" : {
+      "put" : {
+        "tags" : [ "Support Contact" ],
+        "summary" : "Update platform support contacts",
+        "description" : "Admin endpoint to update official platform contact information",
+        "operationId" : "updateSupportContact",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateSupportContactRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SupportContactResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/admin/subscription-plans/{tier}" : {
       "put" : {
         "tags" : [ "Salon Subscriptions" ],
@@ -417,6 +459,71 @@
                 }
               }
             }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/service-categories/{id}" : {
+      "put" : {
+        "tags" : [ "Service Categories" ],
+        "summary" : "Update service category",
+        "description" : "Admin endpoint to update category details or active status",
+        "operationId" : "updateCategory",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateCategoryRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ServiceCategoryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Service Categories" ],
+        "summary" : "Deactivate service category",
+        "description" : "Admin endpoint to deactivate a service category",
+        "operationId" : "deleteCategory",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
           }
         },
         "security" : [ {
@@ -836,6 +943,42 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/SalonClosureDto"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/owner/salon/change-request" : {
+      "post" : {
+        "tags" : [ "Owner Portal" ],
+        "summary" : "Submit salon change request",
+        "description" : "Submits a request to update salon information pending admin review",
+        "operationId" : "submitChangeRequest",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateSalonChangeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "string"
+                  }
                 }
               }
             }
@@ -1366,6 +1509,39 @@
         } ]
       }
     },
+    "/api/v1/admin/service-categories" : {
+      "post" : {
+        "tags" : [ "Service Categories" ],
+        "summary" : "Create service category",
+        "description" : "Admin endpoint to create a new nail service category",
+        "operationId" : "createCategory",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateCategoryRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ServiceCategoryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/admin/salons/{id}/reject" : {
       "post" : {
         "tags" : [ "Admin Portal" ],
@@ -1414,6 +1590,48 @@
           "schema" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/salon-changes/{id}/{action}" : {
+      "post" : {
+        "tags" : [ "Admin Salon Changes" ],
+        "summary" : "Approve or reject salon change",
+        "description" : "Applies requested salon modifications or marks them as rejected",
+        "operationId" : "decideChange",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "action",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
           }
         } ],
         "responses" : {
@@ -1630,6 +1848,58 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/HealthStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/support/contact" : {
+      "get" : {
+        "tags" : [ "Support Contact" ],
+        "summary" : "Get platform support contacts",
+        "description" : "Public endpoint returning official support email, phone, and social channels",
+        "operationId" : "getSupportContact",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SupportContactResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/service-categories" : {
+      "get" : {
+        "tags" : [ "Service Categories" ],
+        "summary" : "List service categories",
+        "description" : "Public endpoint returning active nail service categories",
+        "operationId" : "getCategories",
+        "parameters" : [ {
+          "name" : "activeOnly",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ServiceCategoryResponse"
+                  }
                 }
               }
             }
@@ -2259,6 +2529,48 @@
         } ]
       }
     },
+    "/api/v1/admin/salon-changes" : {
+      "get" : {
+        "tags" : [ "Admin Salon Changes" ],
+        "summary" : "List pending salon profile changes",
+        "description" : "Returns paginated list of submitted salon profile updates waiting for admin decision",
+        "operationId" : "getChanges",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PagedResultSalonChangeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/admin/dashboard" : {
       "get" : {
         "tags" : [ "Admin Portal" ],
@@ -2272,6 +2584,52 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/AdminDashboardResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/dashboard/revenue" : {
+      "get" : {
+        "tags" : [ "Admin Portal" ],
+        "summary" : "Get platform revenue analytics",
+        "description" : "Retrieves historical gross revenue, estimated platform fees, and booking trends",
+        "operationId" : "getRevenue",
+        "parameters" : [ {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "groupBy",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "month"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminRevenueReportResponse"
                 }
               }
             }
@@ -2802,6 +3160,9 @@
             "maxLength" : 20,
             "minLength" : 0,
             "type" : "string"
+          },
+          "avatarUrl" : {
+            "type" : "string"
           }
         }
       },
@@ -2829,6 +3190,35 @@
           },
           "emailVerified" : {
             "type" : "boolean"
+          }
+        }
+      },
+      "UpdateSupportContactRequest" : {
+        "required" : [ "email", "phone" ],
+        "type" : "object",
+        "properties" : {
+          "email" : {
+            "type" : "string"
+          },
+          "phone" : {
+            "type" : "string"
+          },
+          "facebookUrl" : {
+            "type" : "string"
+          }
+        }
+      },
+      "SupportContactResponse" : {
+        "type" : "object",
+        "properties" : {
+          "email" : {
+            "type" : "string"
+          },
+          "phone" : {
+            "type" : "string"
+          },
+          "facebookUrl" : {
+            "type" : "string"
           }
         }
       },
@@ -2867,6 +3257,44 @@
             "type" : "boolean"
           },
           "registrationAvailable" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "UpdateCategoryRequest" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "iconUrl" : {
+            "type" : "string"
+          },
+          "active" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "ServiceCategoryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "iconUrl" : {
+            "type" : "string"
+          },
+          "active" : {
             "type" : "boolean"
           }
         }
@@ -3137,6 +3565,63 @@
           }
         }
       },
+      "CreateSalonChangeRequest" : {
+        "type" : "object",
+        "properties" : {
+          "kind" : {
+            "type" : "string"
+          },
+          "proposed" : {
+            "$ref" : "#/components/schemas/SalonChangeFieldsDto"
+          },
+          "proposedLogoUrl" : {
+            "type" : "string"
+          },
+          "proposedCoverUrl" : {
+            "type" : "string"
+          },
+          "proposedImageUrls" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "SalonChangeFieldsDto" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "address" : {
+            "type" : "string"
+          },
+          "city" : {
+            "type" : "string"
+          },
+          "district" : {
+            "type" : "string"
+          },
+          "phone" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "latitude" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "longitude" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }
+      },
       "CreateEmployeeRequest" : {
         "required" : [ "fullName" ],
         "type" : "object",
@@ -3391,6 +3876,21 @@
           "newPassword" : {
             "maxLength" : 2147483647,
             "minLength" : 8,
+            "type" : "string"
+          }
+        }
+      },
+      "CreateCategoryRequest" : {
+        "required" : [ "name" ],
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "iconUrl" : {
             "type" : "string"
           }
         }
@@ -3871,6 +4371,83 @@
           }
         }
       },
+      "PagedResultSalonChangeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SalonChangeResponse"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "SalonChangeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "salonId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "salonName" : {
+            "type" : "string"
+          },
+          "kind" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "submittedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "current" : {
+            "$ref" : "#/components/schemas/SalonChangeFieldsDto"
+          },
+          "proposed" : {
+            "$ref" : "#/components/schemas/SalonChangeFieldsDto"
+          },
+          "currentLogoUrl" : {
+            "type" : "string"
+          },
+          "proposedLogoUrl" : {
+            "type" : "string"
+          },
+          "currentImageUrls" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "proposedImageUrls" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
       "AdminDashboardResponse" : {
         "type" : "object",
         "properties" : {
@@ -3896,6 +4473,62 @@
           },
           "totalRevenue" : {
             "type" : "number"
+          }
+        }
+      },
+      "AdminRevenuePointResponse" : {
+        "type" : "object",
+        "properties" : {
+          "date" : {
+            "type" : "string"
+          },
+          "gross" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "fee" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "bookings" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "AdminRevenueReportResponse" : {
+        "type" : "object",
+        "properties" : {
+          "from" : {
+            "type" : "string"
+          },
+          "to" : {
+            "type" : "string"
+          },
+          "groupBy" : {
+            "type" : "string"
+          },
+          "gross" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "fee" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "completedBookings" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "estimatedBookings" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "points" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AdminRevenuePointResponse"
+            }
           }
         }
       },

@@ -32,7 +32,7 @@ class OwnerWalkInBookingIntegrationTest extends BaseCharacterizationTest {
 
         mvc.perform(post("/api/v1/owner/bookings/walk-ins")
                         .contentType(MediaType.APPLICATION_JSON).content(payload))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
 
         mvc.perform(post("/api/v1/owner/bookings/walk-ins").header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON).content(payload))

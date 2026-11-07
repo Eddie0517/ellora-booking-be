@@ -95,7 +95,7 @@ class BookingControllerTest {
         mockMvc.perform(post("/api/v1/bookings")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -140,13 +140,13 @@ class BookingControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/bookings/{id} should return 422 when booking not found")
-    void shouldReturn422WhenBookingNotFound() throws Exception {
+    @DisplayName("GET /api/v1/bookings/{id} should return 404 when booking not found")
+    void shouldReturn404WhenBookingNotFound() throws Exception {
         when(getBookingDetailsUseCase.execute(999L))
                 .thenThrow(new BusinessRuleException("BOOKING_NOT_FOUND", "Không tìm thấy lịch hẹn"));
 
         mockMvc.perform(get("/api/v1/bookings/999"))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.type").value("https://ellora.vn/errors/business-rule-violation"))
                 .andExpect(jsonPath("$.detail").value("Không tìm thấy lịch hẹn"));
     }
