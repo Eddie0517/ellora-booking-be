@@ -71,6 +71,7 @@ public class GlobalExceptionHandler {
         log.warn("Business rule violation [{}] at {}: {}", ex.getErrorCode(), request.getRequestURI(), ex.getMessage());
         HttpStatus status = "INVALID_CREDENTIALS".equals(ex.getErrorCode()) ? HttpStatus.UNAUTHORIZED
                 : "FORBIDDEN".equals(ex.getErrorCode()) ? HttpStatus.FORBIDDEN
+                : ("SALON_NOT_FOUND".equals(ex.getErrorCode()) || "NOT_FOUND".equals(ex.getErrorCode()) || "USER_NOT_FOUND".equals(ex.getErrorCode()) || "BOOKING_NOT_FOUND".equals(ex.getErrorCode())) ? HttpStatus.NOT_FOUND
                 : HttpStatus.UNPROCESSABLE_ENTITY;
 
         ProblemDetail problemDetail =

@@ -20,9 +20,18 @@ public class UpdateProfileUseCase {
         if (userId == null) throw new BusinessRuleException("FORBIDDEN", "Vui lòng đăng nhập");
         User user = users.findById(userId)
                 .orElseThrow(() -> new BusinessRuleException("USER_NOT_FOUND", "Không tìm thấy tài khoản"));
-        user.updateProfile(request.fullName(), request.phone(), null);
+
+        user.updateProfile(request.fullName(), request.phone(), request.avatarUrl());
         User saved = users.save(user);
-        return new UserProfileResponse(saved.getId(), saved.getEmail(), saved.getFullName(), saved.getPhone(),
-                saved.getAvatarUrl(), saved.getRole().name(), saved.getEmailVerifiedAt() != null);
+
+        return new UserProfileResponse(
+                saved.getId(),
+                saved.getEmail(),
+                saved.getFullName(),
+                saved.getPhone(),
+                saved.getAvatarUrl(),
+                saved.getRole().name(),
+                saved.getEmailVerifiedAt() != null
+        );
     }
 }

@@ -1,15 +1,17 @@
 package com.ellora.api.controller;
 
+import com.ellora.application.feature.admin.dto.CreateSalonChangeRequest;
 import com.ellora.application.feature.booking.dto.BookingDetailsResponse;
+import com.ellora.application.feature.owner.CreateOwnerWalkInBookingUseCase;
 import com.ellora.application.feature.owner.GetOwnerBookingsUseCase;
 import com.ellora.application.feature.owner.GetOwnerDashboardUseCase;
 import com.ellora.application.feature.owner.GetOwnerSalonUseCase;
-import com.ellora.application.feature.owner.CreateOwnerWalkInBookingUseCase;
 import com.ellora.application.feature.owner.ManageOwnerEmployeesUseCase;
 import com.ellora.application.feature.owner.ManageOwnerServicesUseCase;
+import com.ellora.application.feature.owner.SalonClosureUseCase;
+import com.ellora.application.feature.owner.SubmitSalonChangeUseCase;
 import com.ellora.application.feature.owner.UpdateOwnerSalonUseCase;
 import com.ellora.application.feature.owner.WorkingHoursUseCase;
-import com.ellora.application.feature.owner.SalonClosureUseCase;
 import com.ellora.application.feature.owner.dto.CreateSalonClosureRequest;
 import com.ellora.application.feature.owner.dto.CreateWalkInBookingRequest;
 import com.ellora.application.feature.owner.dto.SalonClosureDto;
@@ -60,6 +62,7 @@ public class OwnerController {
     private final WorkingHoursUseCase workingHoursUseCase;
     private final SalonClosureUseCase salonClosureUseCase;
     private final CreateOwnerWalkInBookingUseCase createOwnerWalkInBookingUseCase;
+    private final SubmitSalonChangeUseCase submitSalonChangeUseCase;
 
     private UUID getOwnerId(Object principal) {
         if (!(principal instanceof UUID ownerId)) {
@@ -119,6 +122,15 @@ public class OwnerController {
             @Valid @RequestBody UpdateOwnerSalonRequest request) {
         SalonDetailsResponse response = updateOwnerSalonUseCase.execute(getOwnerId(principal), request);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/salon/change-request")
+    @Operation(summary = "Submit salon change request", description = "Submits a request to update salon information pending admin review")
+    public ResponseEntity<java.util.Map<String, String>> submitChangeRequest(
+            @AuthenticationPrincipal Object principal,
+            @Valid @RequestBody CreateSalonChangeRequest request) {
+        submitSalonChangeUseCase.execute(getOwnerId(principal), request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(java.util.Map.of("message", "Đã gửi yêu cầu thay đổi thông tin thành công."));
     }
 
     @GetMapping("/dashboard")

@@ -29,9 +29,10 @@ class UpdateProfileUseCaseTest {
         user.setRole(Role.CUSTOMER);
         when(users.findById(id)).thenReturn(Optional.of(user));
         when(users.save(user)).thenReturn(user);
-        var result = new UpdateProfileUseCase(users).execute(id, new UpdateProfileRequest("New name", "0900000000"));
+        var result = new UpdateProfileUseCase(users).execute(id, new UpdateProfileRequest("New name", "0900000000", "https://img.com/avatar.jpg"));
         assertThat(result.fullName()).isEqualTo("New name");
         assertThat(result.phone()).isEqualTo("0900000000");
+        assertThat(result.avatarUrl()).isEqualTo("https://img.com/avatar.jpg");
         assertThat(result.email()).isEqualTo("customer@example.com");
     }
 }

@@ -29,6 +29,11 @@ public class BookingRepositoryAdapter implements BookingRepository {
     }
 
     @Override
+    public List<Booking> findAll() {
+        return springDataBookingRepository.findAll().stream().map(bookingMapper::toDomain).toList();
+    }
+
+    @Override
     public Optional<Booking> findById(Long id) {
         return springDataBookingRepository.findById(id).map(bookingMapper::toDomain);
     }

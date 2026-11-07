@@ -3,11 +3,13 @@ package com.ellora.api.controller;
 import com.ellora.application.common.dto.PagedResult;
 import com.ellora.application.feature.admin.ApproveSalonUseCase;
 import com.ellora.application.feature.admin.GetAdminDashboardUseCase;
+import com.ellora.application.feature.admin.GetAdminRevenueUseCase;
 import com.ellora.application.feature.admin.GetAdminUsersUseCase;
 import com.ellora.application.feature.admin.GetPendingSalonsUseCase;
 import com.ellora.application.feature.admin.LockUserUseCase;
 import com.ellora.application.feature.admin.RejectSalonUseCase;
 import com.ellora.application.feature.admin.dto.AdminDashboardResponse;
+import com.ellora.application.feature.admin.dto.AdminRevenueReportResponse;
 import com.ellora.application.feature.admin.dto.AdminUserResponse;
 import com.ellora.application.feature.admin.dto.LockUserRequest;
 import com.ellora.application.feature.salon.dto.SalonDetailsResponse;
@@ -19,7 +21,6 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
 
     private final GetAdminDashboardUseCase getAdminDashboardUseCase;
+    private final GetAdminRevenueUseCase getAdminRevenueUseCase;
     private final GetPendingSalonsUseCase getPendingSalonsUseCase;
     private final ApproveSalonUseCase approveSalonUseCase;
     private final RejectSalonUseCase rejectSalonUseCase;
@@ -47,6 +49,16 @@ public class AdminController {
     @Operation(summary = "Get platform metrics", description = "Retrieves aggregated counts of salons, users, and overall gross revenue")
     public ResponseEntity<AdminDashboardResponse> getDashboard() {
         AdminDashboardResponse response = getAdminDashboardUseCase.execute();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/dashboard/revenue")
+    @Operation(summary = "Get platform revenue analytics", description = "Retrieves historical gross revenue, estimated platform fees, and booking trends")
+    public ResponseEntity<AdminRevenueReportResponse> getRevenue(
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to,
+            @RequestParam(defaultValue = "month") String groupBy) {
+        AdminRevenueReportResponse response = getAdminRevenueUseCase.execute(from, to, groupBy);
         return ResponseEntity.ok(response);
     }
 

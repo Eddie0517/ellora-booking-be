@@ -11,6 +11,8 @@ public interface BookingRepository {
 
     Booking save(Booking booking);
 
+    List<Booking> findAll();
+
     Optional<Booking> findById(Long id);
 
     List<Booking> findByCustomerId(UUID customerId);

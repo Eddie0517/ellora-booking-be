@@ -46,7 +46,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, exception) ->
-                                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED)))
+                                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED))
+                        .accessDeniedHandler((request, response, exception) ->
+                                response.setStatus(HttpServletResponse.SC_FORBIDDEN)))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/healthz",
@@ -62,7 +64,9 @@ public class SecurityConfig {
                                 "/api/v1/auth/confirm-forgot-password",
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/refresh",
-                                "/api/v1/webhooks/payos"
+                                "/api/v1/webhooks/payos",
+                                "/api/v1/support/contact",
+                                "/api/v1/service-categories"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/salon-plans").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/salons/**").permitAll()
@@ -71,6 +75,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/bookings/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/v1/bookings/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/bookings/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/owner/salon").authenticated()
                         .requestMatchers("/api/v1/owner/**").hasRole("SALON_OWNER")
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
