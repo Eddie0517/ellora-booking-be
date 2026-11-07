@@ -27,7 +27,11 @@ public class GetOwnerSalonUseCase {
             throw new BusinessRuleException("SALON_NOT_FOUND", "Không tìm thấy salon của chủ tiệm");
         }
 
-        Salon salon = salons.get(0);
+        Salon salon = salons.stream()
+                .filter(s -> s.getStatus() == com.ellora.domain.constant.SalonStatus.ACTIVE || s.getStatus() == com.ellora.domain.constant.SalonStatus.PENDING_APPROVAL)
+                .findFirst()
+                .orElse(salons.get(0));
+
         return new SalonDetailsResponse(
                 salon.getId(),
                 salon.getOwnerId(),

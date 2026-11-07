@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SpringDataSalonRepository extends JpaRepository<SalonEntity, Long> {
 
-    List<SalonEntity> findByOwnerId(UUID ownerId);
+    List<SalonEntity> findByOwnerIdOrderByIdDesc(UUID ownerId);
 
     Page<SalonEntity> findByStatus(String status, Pageable pageable);
 

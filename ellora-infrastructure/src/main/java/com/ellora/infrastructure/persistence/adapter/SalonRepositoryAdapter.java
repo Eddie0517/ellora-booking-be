@@ -52,7 +52,7 @@ public class SalonRepositoryAdapter implements SalonRepository {
 
     @Override
     public List<Salon> findByOwnerId(UUID ownerId) {
-        return springDataSalonRepository.findByOwnerId(ownerId).stream().map(salonMapper::toDomain).toList();
+        return springDataSalonRepository.findByOwnerIdOrderByIdDesc(ownerId).stream().map(salonMapper::toDomain).toList();
     }
 
     @Override
