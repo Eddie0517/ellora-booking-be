@@ -17,6 +17,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
@@ -96,6 +97,22 @@ public class GlobalExceptionHandler {
         problemDetail.setProperty("traceId", UUID.randomUUID().toString());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .body(problemDetail);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ProblemDetail> handleMaxUploadSizeExceeded(
+            MaxUploadSizeExceededException ex, HttpServletRequest request) {
+        log.warn("Max upload size exceeded at {}: {}", request.getRequestURI(), ex.getMessage());
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.PAYLOAD_TOO_LARGE, "Kích thước tệp tải lên vượt quá giới hạn cho phép (tối đa 10 MB).");
+        problemDetail.setType(URI.create("https://ellora.vn/errors/file-too-large"));
+        problemDetail.setTitle("Tệp tải lên quá lớn");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        problemDetail.setProperty("traceId", UUID.randomUUID().toString());
+
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                 .body(problemDetail);
     }

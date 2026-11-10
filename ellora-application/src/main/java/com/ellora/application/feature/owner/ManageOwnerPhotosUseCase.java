@@ -192,7 +192,7 @@ public class ManageOwnerPhotosUseCase {
         salonRepository.save(salon);
 
         salonChangeRepository.save(new SalonChange(
-                null, salon.getId(), "SHOWCASE", "{}", salon.getLogoUrl(), salon.getLogoUrl(),
+                null, salon.getId(), "GALLERY", "{}", salon.getLogoUrl(), salon.getLogoUrl(),
                 null, null, "APPROVED", Instant.now(), ownerId, Instant.now()
         ));
         return list;

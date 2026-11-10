@@ -18,6 +18,7 @@ import com.ellora.domain.repository.SalonRepository;
 import com.ellora.domain.repository.UserRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -75,6 +76,16 @@ public class CreateReviewUseCase {
                 : BigDecimal.ZERO;
         salon.updateRatingStats(scaledAvg, (int) totalReviews);
         salonRepository.save(salon);
+
+        // Khi người dùng đánh giá không hài lòng (<= 2 sao), chuyển thành phản ánh lịch hẹn sang luồng admin xử lý
+        if (request.rating() <= 2) {
+            String note = (request.comment() != null && !request.comment().isBlank())
+                    ? request.comment().trim()
+                    : "Khách hàng đánh giá không hài lòng (" + request.rating() + "/5 sao)";
+            booking.dispute(note);
+            booking.setCompletionRespondedAt(Instant.now());
+            bookingRepository.save(booking);
+        }
 
         User customer = userRepository.findById(customerId).orElse(null);
         NailService service = booking.getServiceId() != null ? nailServiceRepository.findById(booking.getServiceId()).orElse(null) : null;

@@ -10,6 +10,8 @@ import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "salon_profile_changes")
@@ -24,6 +26,7 @@ public class SalonChangeEntity {
     private Long salonId;
 
     @Column(name = "proposed", nullable = false, columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String proposedJson;
 
     @Column(name = "kind", nullable = false, length = 20)
@@ -36,9 +39,11 @@ public class SalonChangeEntity {
     private String proposedLogoUrl;
 
     @Column(name = "previous_image_urls", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String previousImageUrlsJson;
 
     @Column(name = "proposed_image_urls", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String proposedImageUrlsJson;
 
     @Column(name = "status", nullable = false, length = 20)

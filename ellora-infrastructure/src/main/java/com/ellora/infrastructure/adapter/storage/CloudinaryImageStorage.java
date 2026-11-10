@@ -47,32 +47,14 @@ public class CloudinaryImageStorage implements ImageStorage {
 
     @Override
     public String uploadImage(String folder, String filename, InputStream inputStream, long contentLength, String contentType) {
-        if (contentLength <= 0 || contentLength > 5 * 1024 * 1024) {
-            throw new BusinessRuleException("INVALID_IMAGE_SIZE", "Kích thước ảnh phải lớn hơn 0 và không vượt quá 5 MB.");
+        if (contentLength <= 0 || contentLength > 10 * 1024 * 1024) {
+            throw new BusinessRuleException("INVALID_IMAGE_SIZE", "Kích thước ảnh phải lớn hơn 0 và không vượt quá 10 MB.");
         }
 
         byte[] bytes;
         try {
             bytes = inputStream.readAllBytes();
-            try (var input = ImageIO.createImageInputStream(new ByteArrayInputStream(bytes))) {
-                var readers = ImageIO.getImageReaders(input);
-                if (!readers.hasNext()) {
-                    throw new BusinessRuleException("INVALID_IMAGE_FORMAT", "Chỉ hỗ trợ ảnh định dạng JPG hoặc PNG.");
-                }
-                var reader = readers.next();
-                try {
-                    reader.setInput(input);
-                    String format = reader.getFormatName();
-                    if (!format.equalsIgnoreCase("JPEG") && !format.equalsIgnoreCase("PNG") && !format.equalsIgnoreCase("JPG")) {
-                        throw new BusinessRuleException("INVALID_IMAGE_FORMAT", "Chỉ hỗ trợ ảnh JPG hoặc PNG.");
-                    }
-                    if ((long) reader.getWidth(0) * reader.getHeight(0) > 25_000_000L) {
-                        throw new BusinessRuleException("IMAGE_TOO_LARGE", "Độ phân giải ảnh vượt quá giới hạn tối đa 25 megapixel.");
-                    }
-                } finally {
-                    reader.dispose();
-                }
-            }
+            validateImageBytes(bytes);
         } catch (BusinessRuleException e) {
             throw e;
         } catch (Exception e) {
@@ -140,6 +122,44 @@ public class CloudinaryImageStorage implements ImageStorage {
             return baos.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException("Failed to construct multipart body", e);
+        }
+    }
+
+    private void validateImageBytes(byte[] bytes) {
+        if (bytes == null || bytes.length < 12) {
+            throw new BusinessRuleException("INVALID_IMAGE", "Tệp tin hình ảnh không hợp lệ hoặc bị rỗng.");
+        }
+
+        boolean isJpeg = (bytes[0] == (byte) 0xFF && bytes[1] == (byte) 0xD8 && bytes[2] == (byte) 0xFF);
+        boolean isPng = (bytes[0] == (byte) 0x89 && bytes[1] == (byte) 0x50 && bytes[2] == (byte) 0x4E && bytes[3] == (byte) 0x47
+                && bytes[4] == (byte) 0x0D && bytes[5] == (byte) 0x0A && bytes[6] == (byte) 0x1A && bytes[7] == (byte) 0x0A);
+        boolean isWebp = (bytes[0] == 'R' && bytes[1] == 'I' && bytes[2] == 'F' && bytes[3] == 'F'
+                && bytes[8] == 'W' && bytes[9] == 'E' && bytes[10] == 'B' && bytes[11] == 'P');
+        boolean isGif = (bytes[0] == 'G' && bytes[1] == 'I' && bytes[2] == 'F' && bytes[3] == '8');
+
+        if (!isJpeg && !isPng && !isWebp && !isGif) {
+            throw new BusinessRuleException("INVALID_IMAGE_FORMAT", "Chỉ hỗ trợ ảnh định dạng JPG, PNG hoặc WebP.");
+        }
+
+        if (isJpeg || isPng || isGif) {
+            try (var input = ImageIO.createImageInputStream(new ByteArrayInputStream(bytes))) {
+                var readers = ImageIO.getImageReaders(input);
+                if (readers.hasNext()) {
+                    var reader = readers.next();
+                    try {
+                        reader.setInput(input);
+                        if ((long) reader.getWidth(0) * reader.getHeight(0) > 40_000_000L) {
+                            throw new BusinessRuleException("IMAGE_TOO_LARGE", "Độ phân giải ảnh vượt quá giới hạn tối đa 40 megapixel.");
+                        }
+                    } finally {
+                        reader.dispose();
+                    }
+                }
+            } catch (BusinessRuleException e) {
+                throw e;
+            } catch (Exception e) {
+                log.debug("Image dimension probe note: {}", e.getMessage());
+            }
         }
     }
 
