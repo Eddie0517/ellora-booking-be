@@ -1778,6 +1778,36 @@
         }
       }
     },
+    "/api/v1/auth/google" : {
+      "post" : {
+        "tags" : [ "Authentication" ],
+        "summary" : "Google login",
+        "description" : "Authenticates with Google ID token credential and returns access & refresh tokens",
+        "operationId" : "loginWithGoogle",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/GoogleLoginRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/forgot-password" : {
       "post" : {
         "tags" : [ "Authentication" ],
@@ -4772,6 +4802,15 @@
             "type" : "string"
           },
           "password" : {
+            "type" : "string"
+          }
+        }
+      },
+      "GoogleLoginRequest" : {
+        "required" : [ "credential" ],
+        "type" : "object",
+        "properties" : {
+          "credential" : {
             "type" : "string"
           }
         }

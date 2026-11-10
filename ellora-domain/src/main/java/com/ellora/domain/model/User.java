@@ -49,6 +49,14 @@ public class User {
                 phone != null ? phone.trim() : null, null, Role.CUSTOMER, null, true, false, now, now);
     }
 
+    public static User createNewGoogleCustomer(String email, String fullName, String avatarUrl) {
+        Instant now = Instant.now();
+        String safeName = fullName != null && !fullName.isBlank() ? fullName.trim() : "Google User";
+        return new User(UUID.randomUUID(), email.toLowerCase().trim(), null, safeName,
+                null, avatarUrl != null && !avatarUrl.isBlank() ? avatarUrl.trim() : null,
+                Role.CUSTOMER, now, true, false, now, now);
+    }
+
     public boolean canAuthenticate() {
         return enabled && !locked;
     }
