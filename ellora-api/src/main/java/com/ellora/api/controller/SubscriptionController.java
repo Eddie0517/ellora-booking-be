@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -63,6 +64,14 @@ public class SubscriptionController {
             @AuthenticationPrincipal Object principal,
             @Valid @RequestBody CreateSubscriptionRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(subscriptions.createRequest(ownerId(principal), request));
+    }
+
+    @DeleteMapping("/owner/subscription/requests/{id}")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Cancel a pending unpaid subscription request")
+    public ResponseEntity<Void> cancelRequest(@AuthenticationPrincipal Object principal, @PathVariable Long id) {
+        subscriptions.cancelPendingRequest(ownerId(principal), id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/owner/subscription/requests/{id}/prepare-payment")

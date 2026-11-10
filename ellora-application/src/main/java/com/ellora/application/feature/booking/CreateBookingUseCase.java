@@ -36,6 +36,11 @@ public class CreateBookingUseCase {
                 .orElseThrow(() -> new BusinessRuleException("SALON_NOT_FOUND",
                         "Không tìm thấy salon với mã định danh " + request.salonId()));
 
+        if (salon.isOverdue()) {
+            throw new BusinessRuleException("SALON_PAYMENT_OVERDUE",
+                    "Tiệm tạm ngưng nhận lịch hẹn do chưa hoàn tất nghĩa vụ phí nền tảng");
+        }
+
         NailService service = nailServiceRepository.findById(request.serviceId())
                 .orElseThrow(() -> new BusinessRuleException("SERVICE_NOT_FOUND",
                         "Không tìm thấy dịch vụ với mã " + request.serviceId()));

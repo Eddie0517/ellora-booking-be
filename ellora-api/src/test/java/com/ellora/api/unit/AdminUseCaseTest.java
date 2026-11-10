@@ -48,6 +48,8 @@ class AdminUseCaseTest {
     private BookingRepository bookingRepository;
     @Mock
     private RefreshTokenRepository refreshTokenRepository;
+    @Mock
+    private com.ellora.application.common.port.ImageStorage imageStorage;
 
     private GetAdminDashboardUseCase getAdminDashboardUseCase;
     private GetPendingSalonsUseCase getPendingSalonsUseCase;
@@ -60,7 +62,7 @@ class AdminUseCaseTest {
     void setUp() {
         getAdminDashboardUseCase = new GetAdminDashboardUseCase(salonRepository, userRepository, bookingRepository);
         getPendingSalonsUseCase = new GetPendingSalonsUseCase(salonRepository);
-        approveSalonUseCase = new ApproveSalonUseCase(salonRepository, userRepository);
+        approveSalonUseCase = new ApproveSalonUseCase(salonRepository, userRepository, imageStorage);
         rejectSalonUseCase = new RejectSalonUseCase(salonRepository);
         getAdminUsersUseCase = new GetAdminUsersUseCase(userRepository);
         lockUserUseCase = new LockUserUseCase(userRepository, refreshTokenRepository);

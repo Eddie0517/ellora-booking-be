@@ -37,7 +37,9 @@ public class UpdateOwnerSalonUseCase {
                 request.district(),
                 request.phone(),
                 request.email(),
-                request.logoUrl()
+                request.logoUrl(),
+                request.latitude(),
+                request.longitude()
         );
 
         Salon savedSalon = salonRepository.save(salon);

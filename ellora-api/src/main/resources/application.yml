@@ -52,6 +52,9 @@ logging:
     com.ellora: INFO
     org.flywaydb: INFO
 app:
+  google:
+    client-id: ${GOOGLE_CLIENT_ID:}
+
   payos:
     client-id: ${PAYOS_CLIENT_ID:}
     api-key: ${PAYOS_API_KEY:}

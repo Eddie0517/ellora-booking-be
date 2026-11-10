@@ -13,6 +13,7 @@ import com.ellora.application.feature.admin.dto.AdminRevenueReportResponse;
 import com.ellora.application.feature.admin.dto.AdminUserResponse;
 import com.ellora.application.feature.admin.dto.LockUserRequest;
 import com.ellora.application.feature.salon.dto.SalonDetailsResponse;
+import com.ellora.domain.exception.BusinessRuleException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -72,10 +73,20 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/salons/{id}/approve")
-    @Operation(summary = "Approve salon", description = "Approves a pending salon and promotes owner to SALON_OWNER")
-    public ResponseEntity<Map<String, String>> approveSalon(@PathVariable Long id) {
-        approveSalonUseCase.execute(id);
+    @PostMapping(value = "/salons/{id}/approve", consumes = {org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE, org.springframework.http.MediaType.ALL_VALUE})
+    @Operation(summary = "Approve salon", description = "Approves a pending salon with contract file and promotes owner to SALON_OWNER")
+    public ResponseEntity<Map<String, String>> approveSalon(
+            @PathVariable Long id,
+            @RequestParam(value = "contract", required = false) org.springframework.web.multipart.MultipartFile contract) {
+        if (contract != null && !contract.isEmpty()) {
+            try {
+                approveSalonUseCase.execute(id, contract.getOriginalFilename(), contract.getInputStream(), contract.getSize(), contract.getContentType());
+            } catch (java.io.IOException e) {
+                throw new BusinessRuleException("FILE_READ_ERROR", "Không thể đọc dữ liệu tệp hợp đồng");
+            }
+        } else {
+            approveSalonUseCase.execute(id);
+        }
         return ResponseEntity.ok(Map.of("message", "Đã duyệt và cấp quyền chủ salon thành công."));
     }
 

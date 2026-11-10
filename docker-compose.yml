@@ -78,6 +78,7 @@ services:
       PAYOS_BASE_URL: ${PAYOS_BASE_URL:-https://api-merchant.payos.vn}
       PAYOS_RETURN_URL: ${PAYOS_RETURN_URL:-http://localhost:5173/owner/subscription}
       PAYOS_CANCEL_URL: ${PAYOS_CANCEL_URL:-http://localhost:5173/owner/subscription}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
     volumes:
       - .:/app
       - backend_m2:/root/.m2

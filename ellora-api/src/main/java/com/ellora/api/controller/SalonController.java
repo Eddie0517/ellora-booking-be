@@ -51,13 +51,19 @@ public class SalonController {
     private final GetSalonAvailabilityUseCase getSalonAvailabilityUseCase;
 
     @GetMapping
-    @Operation(summary = "Search and list salons", description = "Returns paginated list of active nail salons matching city and keyword filters")
+    @Operation(summary = "Search and list salons", description = "Returns paginated list of active nail salons matching location, coordinates, radius, and keyword filters")
     public ResponseEntity<PagedResult<SalonSummaryResponse>> getSalons(
             @RequestParam(required = false) String city,
+            @RequestParam(required = false) String location,
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude,
+            @RequestParam(required = false) Double radiusKm,
+            @RequestParam(required = false, defaultValue = "newest") String sort,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
-        PagedResult<SalonSummaryResponse> result = getSalonsUseCase.execute(city, keyword, page, pageSize);
+        String effectiveCity = (city != null && !city.isBlank()) ? city : location;
+        PagedResult<SalonSummaryResponse> result = getSalonsUseCase.execute(effectiveCity, keyword, latitude, longitude, radiusKm, sort, page, pageSize);
         return ResponseEntity.ok(result);
     }
 

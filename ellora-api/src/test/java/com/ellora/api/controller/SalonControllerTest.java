@@ -1,5 +1,6 @@
 package com.ellora.api.controller;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -58,7 +59,7 @@ class SalonControllerTest {
                 1L, "Ellora Spa", "123 Nguyen Hue", "Ho Chi Minh", "Quan 1", "0901234567", null, BigDecimal.valueOf(4.8), 25);
         PagedResult<SalonSummaryResponse> pagedResult = PagedResult.of(Collections.singletonList(salon), 1, 20, 1);
 
-        when(getSalonsUseCase.execute(eq("Ho Chi Minh"), eq("Spa"), anyInt(), anyInt()))
+        when(getSalonsUseCase.execute(eq("Ho Chi Minh"), eq("Spa"), any(), any(), any(), eq("newest"), anyInt(), anyInt()))
                 .thenReturn(pagedResult);
 
         mockMvc.perform(get("/api/v1/salons")

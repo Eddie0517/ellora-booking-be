@@ -34,14 +34,14 @@
     "name" : "Service Categories",
     "description" : "Endpoints for browsing and managing nail service categories"
   }, {
-    "name" : "Owner Billing",
-    "description" : "Endpoints for salon owners to view monthly platform bills, fees, and QR payment details"
-  }, {
     "name" : "Admin Content",
     "description" : "Endpoints for platform admin to moderate salon media and user reviews"
   }, {
     "name" : "Salons",
     "description" : "Endpoints for discovering salons, viewing service menus and staff members"
+  }, {
+    "name" : "Owner Billing",
+    "description" : "Endpoints for salon owners to view monthly platform bills, fees, and PayOS payment details"
   }, {
     "name" : "System",
     "description" : "System liveness and diagnostics endpoints"
@@ -732,10 +732,17 @@
       "get" : {
         "tags" : [ "Salons" ],
         "summary" : "Search and list salons",
-        "description" : "Returns paginated list of active nail salons matching city and keyword filters",
+        "description" : "Returns paginated list of active nail salons matching location, coordinates, radius, and keyword filters",
         "operationId" : "getSalons",
         "parameters" : [ {
           "name" : "city",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "location",
           "in" : "query",
           "required" : false,
           "schema" : {
@@ -747,6 +754,38 @@
           "required" : false,
           "schema" : {
             "type" : "string"
+          }
+        }, {
+          "name" : "latitude",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }, {
+          "name" : "longitude",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }, {
+          "name" : "radiusKm",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "newest"
           }
         }, {
           "name" : "page",
@@ -1063,6 +1102,39 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/owner/salon/resolve-maps-url" : {
+      "post" : {
+        "tags" : [ "Owner Portal" ],
+        "summary" : "Resolve coordinates from Google Maps link",
+        "description" : "Extracts latitude and longitude from full or shortened Google Maps URLs",
+        "operationId" : "resolveMapsUrl",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ResolveMapsUrlRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ResolvedCoordinatesResponse"
                 }
               }
             }
@@ -1470,6 +1542,66 @@
         } ]
       }
     },
+    "/api/v1/owner/billing/sync-payment" : {
+      "post" : {
+        "tags" : [ "Owner Billing" ],
+        "summary" : "Sync PayOS payment status and settle overdue platform fees",
+        "operationId" : "syncPayment",
+        "parameters" : [ {
+          "name" : "month",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlatformBillResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/owner/billing/prepare-payment" : {
+      "post" : {
+        "tags" : [ "Owner Billing" ],
+        "summary" : "Prepare a PayOS payment link and VietQR code for the specified month",
+        "operationId" : "preparePayment_1",
+        "parameters" : [ {
+          "name" : "month",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlatformBillResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/media/upload" : {
       "post" : {
         "tags" : [ "Media" ],
@@ -1778,6 +1910,36 @@
         }
       }
     },
+    "/api/v1/auth/google" : {
+      "post" : {
+        "tags" : [ "Authentication" ],
+        "summary" : "Google login",
+        "description" : "Authenticates with Google ID token credential and returns access & refresh tokens",
+        "operationId" : "loginWithGoogle",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/GoogleLoginRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/forgot-password" : {
       "post" : {
         "tags" : [ "Authentication" ],
@@ -1972,7 +2134,7 @@
       "post" : {
         "tags" : [ "Admin Portal" ],
         "summary" : "Approve salon",
-        "description" : "Approves a pending salon and promotes owner to SALON_OWNER",
+        "description" : "Approves a pending salon with contract file and promotes owner to SALON_OWNER",
         "operationId" : "approveSalon",
         "parameters" : [ {
           "name" : "id",
@@ -1983,6 +2145,32 @@
             "format" : "int64"
           }
         } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "contract" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              }
+            },
+            "*/*" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "contract" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses" : {
           "200" : {
             "description" : "OK",
@@ -2903,6 +3091,31 @@
         } ]
       }
     },
+    "/api/v1/owner/billing/status" : {
+      "get" : {
+        "tags" : [ "Owner Billing" ],
+        "summary" : "Check if owner salon is locked due to overdue platform fees",
+        "operationId" : "getBillingStatus",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/bookings/{id}" : {
       "get" : {
         "tags" : [ "Bookings" ],
@@ -3592,6 +3805,30 @@
         } ]
       }
     },
+    "/api/v1/owner/subscription/requests/{id}" : {
+      "delete" : {
+        "tags" : [ "Salon Subscriptions" ],
+        "summary" : "Cancel a pending unpaid subscription request",
+        "operationId" : "cancelRequest",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/owner/salon/closures/{id}" : {
       "delete" : {
         "tags" : [ "Owner Portal" ],
@@ -3753,6 +3990,14 @@
           },
           "logoUrl" : {
             "type" : "string"
+          },
+          "latitude" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "longitude" : {
+            "type" : "number",
+            "format" : "double"
           }
         }
       },
@@ -3817,6 +4062,22 @@
             "items" : {
               "type" : "string"
             }
+          },
+          "contractUrl" : {
+            "type" : "string"
+          },
+          "contractFileName" : {
+            "type" : "string"
+          },
+          "contractFileType" : {
+            "type" : "string"
+          },
+          "contractUploadedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "isOverdue" : {
+            "type" : "boolean"
           }
         }
       },
@@ -4111,6 +4372,15 @@
           },
           "enabled" : {
             "type" : "boolean"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "features" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         }
       },
@@ -4137,6 +4407,15 @@
           },
           "registrationAvailable" : {
             "type" : "boolean"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "features" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         }
       },
@@ -4261,6 +4540,14 @@
           },
           "description" : {
             "type" : "string"
+          },
+          "latitude" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "longitude" : {
+            "type" : "number",
+            "format" : "double"
           }
         }
       },
@@ -4470,6 +4757,31 @@
           }
         }
       },
+      "ResolveMapsUrlRequest" : {
+        "required" : [ "url" ],
+        "type" : "object",
+        "properties" : {
+          "url" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ResolvedCoordinatesResponse" : {
+        "type" : "object",
+        "properties" : {
+          "latitude" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "longitude" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "resolvedUrl" : {
+            "type" : "string"
+          }
+        }
+      },
       "CreateSalonClosureRequest" : {
         "required" : [ "date" ],
         "type" : "object",
@@ -4606,6 +4918,67 @@
           },
           "customerNote" : {
             "type" : "string"
+          }
+        }
+      },
+      "PlatformBillResponse" : {
+        "type" : "object",
+        "properties" : {
+          "salonId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "salonName" : {
+            "type" : "string"
+          },
+          "month" : {
+            "type" : "string"
+          },
+          "gross" : {
+            "type" : "number"
+          },
+          "percent" : {
+            "type" : "number"
+          },
+          "fee" : {
+            "type" : "number"
+          },
+          "paid" : {
+            "type" : "number"
+          },
+          "due" : {
+            "type" : "number"
+          },
+          "dueDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "transferContent" : {
+            "type" : "string"
+          },
+          "qrUrl" : {
+            "type" : "string"
+          },
+          "paidAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "remindedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "payosCheckoutUrl" : {
+            "type" : "string"
+          },
+          "payosQrCode" : {
+            "type" : "string"
+          },
+          "payosOrderCode" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       },
@@ -4776,6 +5149,15 @@
           }
         }
       },
+      "GoogleLoginRequest" : {
+        "required" : [ "credential" ],
+        "type" : "object",
+        "properties" : {
+          "credential" : {
+            "type" : "string"
+          }
+        }
+      },
       "ForgotPasswordRequest" : {
         "required" : [ "email" ],
         "type" : "object",
@@ -4839,57 +5221,6 @@
             "minimum" : 0.0,
             "exclusiveMinimum" : false,
             "type" : "number"
-          }
-        }
-      },
-      "PlatformBillResponse" : {
-        "type" : "object",
-        "properties" : {
-          "salonId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "salonName" : {
-            "type" : "string"
-          },
-          "month" : {
-            "type" : "string"
-          },
-          "gross" : {
-            "type" : "number"
-          },
-          "percent" : {
-            "type" : "number"
-          },
-          "fee" : {
-            "type" : "number"
-          },
-          "paid" : {
-            "type" : "number"
-          },
-          "due" : {
-            "type" : "number"
-          },
-          "dueDate" : {
-            "type" : "string",
-            "format" : "date"
-          },
-          "status" : {
-            "type" : "string"
-          },
-          "transferContent" : {
-            "type" : "string"
-          },
-          "qrUrl" : {
-            "type" : "string"
-          },
-          "paidAt" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "remindedAt" : {
-            "type" : "string",
-            "format" : "date-time"
           }
         }
       },
@@ -5137,6 +5468,18 @@
           },
           "subscriptionTier" : {
             "type" : "string"
+          },
+          "latitude" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "longitude" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "distanceKm" : {
+            "type" : "number",
+            "format" : "double"
           }
         }
       },

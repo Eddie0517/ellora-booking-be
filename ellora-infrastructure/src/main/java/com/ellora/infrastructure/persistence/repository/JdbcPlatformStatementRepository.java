@@ -39,6 +39,49 @@ public class JdbcPlatformStatementRepository implements PlatformStatementReposit
     }
 
     @Override
+    public Optional<StatementPaymentRecord> findPendingPayment(Long salonId, String billingMonth) {
+        String sql = "SELECT id, salon_id, billing_month, amount, payos_order_code, payos_payment_link_id, "
+                + "payos_checkout_url, payos_qr_code, status, payment_reference, payment_reported_at, created_at "
+                + "FROM platform_statement_payments WHERE salon_id = ? AND billing_month = ? AND status = 'PENDING' "
+                + "ORDER BY id DESC LIMIT 1";
+        return jdbc.query(sql, rs -> {
+            if (!rs.next()) return Optional.empty();
+            Timestamp repTs = rs.getTimestamp("payment_reported_at");
+            Timestamp crTs = rs.getTimestamp("created_at");
+            return Optional.of(new StatementPaymentRecord(
+                    rs.getLong("id"),
+                    rs.getLong("salon_id"),
+                    rs.getString("billing_month"),
+                    rs.getBigDecimal("amount"),
+                    rs.getLong("payos_order_code"),
+                    rs.getString("payos_payment_link_id"),
+                    rs.getString("payos_checkout_url"),
+                    rs.getString("payos_qr_code"),
+                    rs.getString("status"),
+                    rs.getString("payment_reference"),
+                    repTs != null ? repTs.toInstant() : null,
+                    crTs != null ? crTs.toInstant() : null
+            ));
+        }, salonId, billingMonth);
+    }
+
+    @Override
+    public void savePayment(Long salonId, String billingMonth, BigDecimal amount, Long orderCode,
+                            String paymentLinkId, String checkoutUrl, String qrCode) {
+        String sql = "INSERT INTO platform_statement_payments (salon_id, billing_month, amount, payos_order_code, "
+                + "payos_payment_link_id, payos_checkout_url, payos_qr_code, status, created_at, updated_at) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDING', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
+        jdbc.update(sql, salonId, billingMonth, amount, orderCode, paymentLinkId, checkoutUrl, qrCode);
+    }
+
+    @Override
+    public void markPaymentPaid(Long orderCode, String paymentReference, Instant reportedAt) {
+        String sql = "UPDATE platform_statement_payments SET status = 'PAID', payment_reference = ?, "
+                + "payment_reported_at = ?, updated_at = CURRENT_TIMESTAMP WHERE payos_order_code = ?";
+        jdbc.update(sql, paymentReference, Timestamp.from(reportedAt != null ? reportedAt : Instant.now()), orderCode);
+    }
+
+    @Override
     public void recordPayment(Long salonId, LocalDate month, BigDecimal additionalPaid, UUID confirmedBy) {
         String sql = "INSERT INTO platform_statements (salon_id, billing_month, paid_amount, paid_at, confirmed_by) "
                 + "VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?) "

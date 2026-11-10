@@ -11,6 +11,9 @@ import com.ellora.application.feature.owner.ManageOwnerServicesUseCase;
 import com.ellora.application.feature.owner.SalonClosureUseCase;
 import com.ellora.application.feature.owner.SubmitSalonChangeUseCase;
 import com.ellora.application.feature.owner.UpdateOwnerSalonUseCase;
+import com.ellora.application.feature.owner.ResolveMapsUrlUseCase;
+import com.ellora.application.feature.owner.dto.ResolveMapsUrlRequest;
+import com.ellora.application.feature.owner.dto.ResolvedCoordinatesResponse;
 import com.ellora.application.feature.owner.WorkingHoursUseCase;
 import com.ellora.application.feature.owner.dto.CreateSalonClosureRequest;
 import com.ellora.application.feature.owner.dto.CreateWalkInBookingRequest;
@@ -63,6 +66,7 @@ public class OwnerController {
     private final SalonClosureUseCase salonClosureUseCase;
     private final CreateOwnerWalkInBookingUseCase createOwnerWalkInBookingUseCase;
     private final SubmitSalonChangeUseCase submitSalonChangeUseCase;
+    private final ResolveMapsUrlUseCase resolveMapsUrlUseCase;
 
     private UUID getOwnerId(Object principal) {
         if (!(principal instanceof UUID ownerId)) {
@@ -121,6 +125,16 @@ public class OwnerController {
             @AuthenticationPrincipal Object principal,
             @Valid @RequestBody UpdateOwnerSalonRequest request) {
         SalonDetailsResponse response = updateOwnerSalonUseCase.execute(getOwnerId(principal), request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/salon/resolve-maps-url")
+    @Operation(summary = "Resolve coordinates from Google Maps link", description = "Extracts latitude and longitude from full or shortened Google Maps URLs")
+    public ResponseEntity<ResolvedCoordinatesResponse> resolveMapsUrl(
+            @AuthenticationPrincipal Object principal,
+            @Valid @RequestBody ResolveMapsUrlRequest request) {
+        getOwnerId(principal);
+        ResolvedCoordinatesResponse response = resolveMapsUrlUseCase.execute(request.url());
         return ResponseEntity.ok(response);
     }
 

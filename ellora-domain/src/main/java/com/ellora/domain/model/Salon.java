@@ -20,12 +20,18 @@ public class Salon {
     private SalonStatus status;
     private Double latitude;
     private Double longitude;
+    private Double distanceKm;
     private String subscriptionTier;
     private Instant subscriptionStartsAt;
     private Instant subscriptionExpiresAt;
     private BigDecimal averageRating;
     private Integer totalReviews;
     private java.util.List<String> imageUrls = new java.util.ArrayList<>();
+    private String contractUrl;
+    private String contractFileName;
+    private String contractFileType;
+    private Instant contractUploadedAt;
+    private boolean overdue;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -70,9 +76,13 @@ public class Salon {
     }
 
     public static Salon createNew(UUID ownerId, String name, String address, String city, String district, String phone, String email, String description) {
+        return createNew(ownerId, name, address, city, district, phone, email, description, null, null);
+    }
+
+    public static Salon createNew(UUID ownerId, String name, String address, String city, String district, String phone, String email, String description, Double latitude, Double longitude) {
         Instant now = Instant.now();
         return new Salon(null, ownerId, name, description, address, city, district, phone, email, null,
-                SalonStatus.PENDING_APPROVAL, null, null, null, null, null, BigDecimal.ZERO, 0, now, now);
+                SalonStatus.PENDING_APPROVAL, latitude, longitude, null, null, null, BigDecimal.ZERO, 0, now, now);
     }
 
     public boolean isActive() {
@@ -81,6 +91,15 @@ public class Salon {
 
     public void approve() {
         this.status = SalonStatus.ACTIVE;
+        this.updatedAt = Instant.now();
+    }
+
+    public void approveWithContract(String contractUrl, String contractFileName, String contractFileType) {
+        this.status = SalonStatus.ACTIVE;
+        this.contractUrl = contractUrl;
+        this.contractFileName = contractFileName;
+        this.contractFileType = contractFileType;
+        this.contractUploadedAt = Instant.now();
         this.updatedAt = Instant.now();
     }
 
@@ -97,6 +116,11 @@ public class Salon {
 
     public void updateProfile(String name, String description, String address, String city, String district,
                               String phone, String email, String logoUrl) {
+        updateProfile(name, description, address, city, district, phone, email, logoUrl, this.latitude, this.longitude);
+    }
+
+    public void updateProfile(String name, String description, String address, String city, String district,
+                              String phone, String email, String logoUrl, Double latitude, Double longitude) {
         if (name != null && !name.isBlank()) this.name = name.trim();
         if (description != null) this.description = description.trim();
         if (address != null && !address.isBlank()) this.address = address.trim();
@@ -105,6 +129,8 @@ public class Salon {
         if (phone != null && !phone.isBlank()) this.phone = phone.trim();
         if (email != null && !email.isBlank()) this.email = email.trim();
         if (logoUrl != null) this.logoUrl = logoUrl.trim();
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.updatedAt = Instant.now();
     }
 
@@ -147,6 +173,9 @@ public class Salon {
     public Double getLongitude() { return longitude; }
     public void setLongitude(Double longitude) { this.longitude = longitude; }
 
+    public Double getDistanceKm() { return distanceKm; }
+    public void setDistanceKm(Double distanceKm) { this.distanceKm = distanceKm; }
+
     public String getSubscriptionTier() { return subscriptionTier; }
     public void setSubscriptionTier(String subscriptionTier) { this.subscriptionTier = subscriptionTier; }
 
@@ -164,6 +193,21 @@ public class Salon {
 
     public java.util.List<String> getImageUrls() { return imageUrls; }
     public void setImageUrls(java.util.List<String> imageUrls) { this.imageUrls = imageUrls != null ? new java.util.ArrayList<>(imageUrls) : new java.util.ArrayList<>(); }
+
+    public String getContractUrl() { return contractUrl; }
+    public void setContractUrl(String contractUrl) { this.contractUrl = contractUrl; }
+
+    public String getContractFileName() { return contractFileName; }
+    public void setContractFileName(String contractFileName) { this.contractFileName = contractFileName; }
+
+    public String getContractFileType() { return contractFileType; }
+    public void setContractFileType(String contractFileType) { this.contractFileType = contractFileType; }
+
+    public Instant getContractUploadedAt() { return contractUploadedAt; }
+    public void setContractUploadedAt(Instant contractUploadedAt) { this.contractUploadedAt = contractUploadedAt; }
+
+    public boolean isOverdue() { return overdue; }
+    public void setOverdue(boolean overdue) { this.overdue = overdue; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

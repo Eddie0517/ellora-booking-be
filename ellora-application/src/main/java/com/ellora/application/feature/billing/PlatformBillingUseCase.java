@@ -2,6 +2,7 @@ package com.ellora.application.feature.billing;
 
 import com.ellora.application.common.dto.PagedResult;
 import com.ellora.application.common.port.MailSender;
+import com.ellora.application.common.port.PaymentGateway;
 import com.ellora.application.feature.billing.dto.BillingConfigResponse;
 import com.ellora.application.feature.billing.dto.PlatformBillResponse;
 import com.ellora.domain.exception.BusinessRuleException;
@@ -20,6 +21,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,7 @@ public class PlatformBillingUseCase {
     private final SalonRepository salonRepository;
     private final BookingRepository bookingRepository;
     private final MailSender mailSender;
+    private final PaymentGateway paymentGateway;
 
     private static final ZoneId ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
@@ -48,6 +51,8 @@ public class PlatformBillingUseCase {
                 throw new BusinessRuleException("INVALID_MONTH", "Tháng không hợp lệ, không lớn hơn tháng hiện tại (tối đa 10 năm)");
             }
             return month;
+        } catch (BusinessRuleException e) {
+            throw e;
         } catch (Exception e) {
             throw new BusinessRuleException("INVALID_MONTH", "Định dạng tháng không hợp lệ (YYYY-MM)");
         }
@@ -69,8 +74,8 @@ public class PlatformBillingUseCase {
 
     @Transactional
     public BillingConfigResponse setRate(BigDecimal percent) {
-        LocalDate next = currentMonth().plusMonths(1);
-        feePolicyRepository.saveRate(next, percent);
+        LocalDate current = currentMonth();
+        feePolicyRepository.saveRate(current, percent);
         return getConfiguration();
     }
 
@@ -116,6 +121,7 @@ public class PlatformBillingUseCase {
         }
 
         statementRepository.recordPayment(salonId, month, currentBill.due(), adminId);
+        isSalonOverdue(salonId); // Refresh overdue status
         return computeBill(salon, month);
     }
 
@@ -150,6 +156,129 @@ public class PlatformBillingUseCase {
         }
     }
 
+    @Transactional
+    public PlatformBillResponse prepareBillingPayment(UUID ownerId, String monthStr) {
+        if (ownerId == null) {
+            throw new BusinessRuleException("UNAUTHORIZED", "Vui lòng đăng nhập");
+        }
+        List<Salon> salons = salonRepository.findByOwnerId(ownerId);
+        if (salons.isEmpty()) {
+            throw new BusinessRuleException("SALON_NOT_FOUND", "Không tìm thấy salon của chủ tiệm");
+        }
+        Salon salon = salons.get(0);
+        LocalDate month = parseMonth(monthStr);
+        PlatformBillResponse bill = computeBill(salon, month);
+
+        if (bill.due().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessRuleException("NO_DUE", "Tiệm không còn khoản phí nào cần thanh toán cho tháng này.");
+        }
+
+        long orderCode = Math.abs(ThreadLocalRandom.current().nextLong(100_000_000L, 999_999_999L));
+        String desc = ("Phi " + salon.getId() + " " + bill.month().replace("-", "")).trim();
+        if (desc.length() > 25) desc = desc.substring(0, 25);
+
+        String returnUrl = "http://localhost:5173/owner/billing?orderCode=" + orderCode;
+        String cancelUrl = "http://localhost:5173/owner/billing?orderCode=" + orderCode + "&status=CANCELLED";
+
+        PaymentGateway.PaymentLink link = paymentGateway.createPaymentLink(
+                orderCode,
+                bill.due().longValue(),
+                desc,
+                returnUrl,
+                cancelUrl
+        );
+
+        statementRepository.savePayment(
+                salon.getId(),
+                bill.month(),
+                bill.due(),
+                orderCode,
+                link.paymentLinkId(),
+                link.checkoutUrl(),
+                link.qrCode()
+        );
+
+        return computeBill(salon, month);
+    }
+
+    @Transactional
+    public PlatformBillResponse syncBillingPayment(UUID ownerId, String monthStr) {
+        if (ownerId == null) {
+            throw new BusinessRuleException("UNAUTHORIZED", "Vui lòng đăng nhập");
+        }
+        List<Salon> salons = salonRepository.findByOwnerId(ownerId);
+        if (salons.isEmpty()) {
+            throw new BusinessRuleException("SALON_NOT_FOUND", "Không tìm thấy salon của chủ tiệm");
+        }
+        Salon salon = salons.get(0);
+        LocalDate month = parseMonth(monthStr);
+        String ym = YearMonth.from(month).toString();
+
+        Optional<PlatformStatementRepository.StatementPaymentRecord> pendingOpt =
+                statementRepository.findPendingPayment(salon.getId(), ym);
+
+        if (pendingOpt.isPresent()) {
+            PlatformStatementRepository.StatementPaymentRecord pending = pendingOpt.get();
+            try {
+                PaymentGateway.PaymentStatus status = paymentGateway.getSubscriptionPayment(pending.payosOrderCode());
+                if ("PAID".equalsIgnoreCase(status.status()) || status.amountPaid() >= pending.amount().longValue()) {
+                    statementRepository.markPaymentPaid(pending.payosOrderCode(), status.reference(), Instant.now());
+                    statementRepository.recordPayment(salon.getId(), month, pending.amount(), null);
+                    isSalonOverdue(salon.getId()); // Refresh overdue status
+                }
+            } catch (Exception ignored) {
+                // Ignore sync failures to allow retry
+            }
+        }
+
+        return computeBill(salon, month);
+    }
+
+    @Transactional
+    public boolean isSalonOverdue(Long salonId) {
+        Salon salon = salonRepository.findById(salonId).orElse(null);
+        if (salon == null) return false;
+
+        LocalDate now = LocalDate.now(ZONE);
+        boolean overdue = false;
+
+        // Check past 12 months up to last month
+        for (int i = 1; i <= 12; i++) {
+            LocalDate pastMonth = currentMonth().minusMonths(i);
+            LocalDate deadline = pastMonth.withDayOfMonth(pastMonth.lengthOfMonth());
+            if (now.isAfter(deadline)) {
+                Instant start = pastMonth.atStartOfDay(ZONE).toInstant();
+                Instant end = pastMonth.plusMonths(1).atStartOfDay(ZONE).toInstant();
+                BigDecimal gross = bookingRepository.sumCompletedGrossBySalonIdAndPeriod(salonId, start, end);
+                if (gross != null && gross.compareTo(BigDecimal.ZERO) > 0) {
+                    BigDecimal percent = getRate(pastMonth);
+                    BigDecimal fee = gross.multiply(percent).divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP);
+                    Optional<PlatformStatementRepository.StatementRecord> stmt = statementRepository.findBySalonIdAndMonth(salonId, pastMonth);
+                    BigDecimal paid = stmt.map(PlatformStatementRepository.StatementRecord::paidAmount).orElse(BigDecimal.ZERO);
+                    BigDecimal due = fee.subtract(paid).max(BigDecimal.ZERO);
+                    if (due.compareTo(BigDecimal.ZERO) > 0) {
+                        overdue = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (salon.isOverdue() != overdue) {
+            salon.setOverdue(overdue);
+            salonRepository.save(salon);
+        }
+        return overdue;
+    }
+
+    @Transactional
+    public boolean checkOwnerOverdue(UUID ownerId) {
+        if (ownerId == null) return false;
+        List<Salon> salons = salonRepository.findByOwnerId(ownerId);
+        if (salons.isEmpty()) return false;
+        return isSalonOverdue(salons.get(0).getId());
+    }
+
     private PlatformBillResponse computeBill(Salon salon, LocalDate month) {
         Instant start = month.atStartOfDay(ZONE).toInstant();
         Instant end = month.plusMonths(1).atStartOfDay(ZONE).toInstant();
@@ -173,6 +302,13 @@ public class PlatformBillingUseCase {
         String transferCode = "ELLORA " + salon.getId() + " " + ym.replace("-", "");
         String qrUrl = billingSettingsRepository.findQrUrl().orElse(null);
 
+        Optional<PlatformStatementRepository.StatementPaymentRecord> pendingPayment =
+                statementRepository.findPendingPayment(salon.getId(), ym);
+
+        String payosCheckoutUrl = pendingPayment.map(PlatformStatementRepository.StatementPaymentRecord::payosCheckoutUrl).orElse(null);
+        String payosQrCode = pendingPayment.map(PlatformStatementRepository.StatementPaymentRecord::payosQrCode).orElse(null);
+        Long payosOrderCode = pendingPayment.map(PlatformStatementRepository.StatementPaymentRecord::payosOrderCode).orElse(null);
+
         return new PlatformBillResponse(
                 salon.getId(),
                 salon.getName(),
@@ -187,7 +323,10 @@ public class PlatformBillingUseCase {
                 transferCode,
                 qrUrl,
                 stmt.map(PlatformStatementRepository.StatementRecord::paidAt).orElse(null),
-                stmt.map(PlatformStatementRepository.StatementRecord::remindedAt).orElse(null)
+                stmt.map(PlatformStatementRepository.StatementRecord::remindedAt).orElse(null),
+                payosCheckoutUrl,
+                payosQrCode,
+                payosOrderCode
         );
     }
 }

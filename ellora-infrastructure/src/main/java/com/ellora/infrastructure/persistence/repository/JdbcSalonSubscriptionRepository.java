@@ -25,26 +25,49 @@ public class JdbcSalonSubscriptionRepository implements SalonSubscriptionReposit
             + "JOIN salons s ON s.id = r.salon_id ";
     private final JdbcTemplate jdbc;
 
+    private List<String> parseFeatures(String raw) {
+        if (raw == null || raw.isBlank()) return List.of();
+        return java.util.Arrays.stream(raw.split("[;\\n]+"))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
+    }
+
     @Override
     public List<SalonSubscriptionPlan> findPlans() {
-        return jdbc.query("SELECT tier, monthly_price, enabled FROM salon_subscription_plans ORDER BY tier", (rs, row) ->
-                new SalonSubscriptionPlan(rs.getString("tier"), rs.getBigDecimal("monthly_price"), rs.getBoolean("enabled")));
+        return jdbc.query("SELECT tier, monthly_price, enabled, description, features FROM salon_subscription_plans ORDER BY tier", (rs, row) ->
+                new SalonSubscriptionPlan(rs.getString("tier"), rs.getBigDecimal("monthly_price"), rs.getBoolean("enabled"),
+                        rs.getString("description"), parseFeatures(rs.getString("features"))));
     }
 
     @Override
     public Optional<SalonSubscriptionPlan> findPlan(String tier) {
-        return jdbc.query("SELECT tier, monthly_price, enabled FROM salon_subscription_plans WHERE tier = ?", (rs, row) ->
-                new SalonSubscriptionPlan(rs.getString("tier"), rs.getBigDecimal("monthly_price"), rs.getBoolean("enabled")), tier)
+        return jdbc.query("SELECT tier, monthly_price, enabled, description, features FROM salon_subscription_plans WHERE tier = ?", (rs, row) ->
+                new SalonSubscriptionPlan(rs.getString("tier"), rs.getBigDecimal("monthly_price"), rs.getBoolean("enabled"),
+                        rs.getString("description"), parseFeatures(rs.getString("features"))), tier)
                 .stream().findFirst();
     }
 
     @Override
     public SalonSubscriptionPlan savePlan(String tier, BigDecimal monthlyPrice, boolean enabled, UUID adminId) {
-        jdbc.update("INSERT INTO salon_subscription_plans(tier, monthly_price, enabled, updated_at, updated_by) "
-                        + "VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?) ON CONFLICT (tier) DO UPDATE SET "
-                        + "monthly_price=EXCLUDED.monthly_price, enabled=EXCLUDED.enabled, updated_at=CURRENT_TIMESTAMP, updated_by=EXCLUDED.updated_by",
-                tier, monthlyPrice, enabled, adminId);
+        return savePlan(tier, monthlyPrice, enabled, null, List.of(), adminId);
+    }
+
+    @Override
+    public SalonSubscriptionPlan savePlan(String tier, BigDecimal monthlyPrice, boolean enabled, String description, List<String> features, UUID adminId) {
+        String featuresRaw = (features == null || features.isEmpty()) ? null : String.join(";", features);
+        jdbc.update("INSERT INTO salon_subscription_plans(tier, monthly_price, enabled, description, features, updated_at, updated_by) "
+                        + "VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?) ON CONFLICT (tier) DO UPDATE SET "
+                        + "monthly_price=EXCLUDED.monthly_price, enabled=EXCLUDED.enabled, "
+                        + "description=EXCLUDED.description, features=EXCLUDED.features, "
+                        + "updated_at=CURRENT_TIMESTAMP, updated_by=EXCLUDED.updated_by",
+                tier, monthlyPrice, enabled, description, featuresRaw, adminId);
         return findPlan(tier).orElseThrow();
+    }
+
+    @Override
+    public void cancelRequest(Long requestId) {
+        jdbc.update("DELETE FROM salon_subscription_requests WHERE id = ? AND status = 'PENDING' AND payment_reported_at IS NULL", requestId);
     }
 
     @Override

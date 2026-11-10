@@ -4,6 +4,7 @@ import com.ellora.application.feature.auth.ChangePasswordUseCase;
 import com.ellora.application.feature.auth.ConfirmForgotPasswordUseCase;
 import com.ellora.application.feature.auth.ForgotPasswordUseCase;
 import com.ellora.application.feature.auth.GetCurrentUserUseCase;
+import com.ellora.application.feature.auth.GoogleLoginUseCase;
 import com.ellora.application.feature.auth.LoginUserUseCase;
 import com.ellora.application.feature.auth.LogoutUserUseCase;
 import com.ellora.application.feature.auth.RefreshTokenUseCase;
@@ -15,6 +16,7 @@ import com.ellora.application.feature.auth.dto.UpdateProfileRequest;
 import com.ellora.application.feature.auth.dto.ChangePasswordRequest;
 import com.ellora.application.feature.auth.dto.ConfirmForgotPasswordRequest;
 import com.ellora.application.feature.auth.dto.ForgotPasswordRequest;
+import com.ellora.application.feature.auth.dto.GoogleLoginRequest;
 import com.ellora.application.feature.auth.dto.LoginRequest;
 import com.ellora.application.feature.auth.dto.RefreshTokenRequest;
 import com.ellora.application.feature.auth.dto.RegisterRequest;
@@ -51,6 +53,7 @@ public class AuthController {
     private final VerifyEmailUseCase verifyEmailUseCase;
     private final ResendVerificationUseCase resendVerificationUseCase;
     private final LoginUserUseCase loginUserUseCase;
+    private final GoogleLoginUseCase googleLoginUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
     private final GetCurrentUserUseCase getCurrentUserUseCase;
     private final UpdateProfileUseCase updateProfileUseCase;
@@ -84,6 +87,13 @@ public class AuthController {
     @Operation(summary = "User login", description = "Authenticates credentials and returns access & refresh tokens (requires verified email)")
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
         TokenResponse response = loginUserUseCase.execute(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/google")
+    @Operation(summary = "Google login", description = "Authenticates with Google ID token credential and returns access & refresh tokens")
+    public ResponseEntity<TokenResponse> loginWithGoogle(@Valid @RequestBody GoogleLoginRequest request) {
+        TokenResponse response = googleLoginUseCase.execute(request);
         return ResponseEntity.ok(response);
     }
 

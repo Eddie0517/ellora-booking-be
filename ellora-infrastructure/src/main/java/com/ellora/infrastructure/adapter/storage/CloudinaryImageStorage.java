@@ -99,6 +99,65 @@ public class CloudinaryImageStorage implements ImageStorage {
         }
     }
 
+    @Override
+    public String uploadContractFile(String folder, String filename, InputStream inputStream, long contentLength, String contentType) {
+        if (contentLength <= 0 || contentLength > 15 * 1024 * 1024) {
+            throw new BusinessRuleException("INVALID_FILE_SIZE", "Kích thước tài liệu hợp đồng không được vượt quá 15 MB.");
+        }
+
+        byte[] bytes;
+        try {
+            bytes = inputStream.readAllBytes();
+        } catch (Exception e) {
+            throw new BusinessRuleException("INVALID_FILE", "Không thể đọc dữ liệu tệp hợp đồng.");
+        }
+
+        boolean isPdf = (bytes.length >= 4 && bytes[0] == '%' && bytes[1] == 'P' && bytes[2] == 'D' && bytes[3] == 'F')
+                || (contentType != null && contentType.toLowerCase().contains("pdf"));
+
+        if (!isPdf) {
+            // Must be valid image
+            validateImageBytes(bytes);
+        }
+
+        if (cloudName.isBlank() || apiKey.isBlank() || apiSecret.isBlank()) {
+            log.warn("Cloudinary is not configured on this environment. Fallback to mock contract URL.");
+            return "https://res.cloudinary.com/ellora/raw/upload/v1/contracts/mock-" + System.currentTimeMillis() + (isPdf ? ".pdf" : ".jpg");
+        }
+
+        String boundary = "----ElloraBoundary" + UUID.randomUUID().toString().replace("-", "");
+        byte[] multipartBody = buildMultipartBody(boundary, folder, filename, bytes, isPdf ? "application/pdf" : contentType);
+
+        String credentials = Base64.getEncoder().encodeToString((apiKey + ":" + apiSecret).getBytes(StandardCharsets.UTF_8));
+        String endpointType = isPdf ? "auto" : "image";
+        String uploadUrl = "https://api.cloudinary.com/v1_1/" + cloudName + "/" + endpointType + "/upload";
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(uploadUrl))
+                .header("Authorization", "Basic " + credentials)
+                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                .timeout(Duration.ofSeconds(60))
+                .POST(HttpRequest.BodyPublishers.ofByteArray(multipartBody))
+                .build();
+
+        try {
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                JsonNode root = objectMapper.readTree(response.body());
+                if (root.has("secure_url")) {
+                    return root.get("secure_url").asText();
+                }
+            }
+            log.error("Cloudinary contract upload response failed with code {}: {}", response.statusCode(), response.body());
+            throw new BusinessRuleException("UPLOAD_FAILED", "Không thể tải tài liệu hợp đồng lên dịch vụ lưu trữ.");
+        } catch (BusinessRuleException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Cloudinary contract upload request exception", e);
+            throw new BusinessRuleException("UPLOAD_FAILED", "Không thể tải tài liệu hợp đồng lên dịch vụ lưu trữ.");
+        }
+    }
+
     private byte[] buildMultipartBody(String boundary, String folder, String filename, byte[] fileBytes, String contentType) {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             String targetFolder = (folder != null && !folder.isBlank()) ? folder : "ellora";

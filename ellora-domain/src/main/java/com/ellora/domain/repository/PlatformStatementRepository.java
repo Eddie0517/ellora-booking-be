@@ -18,7 +18,29 @@ public interface PlatformStatementRepository {
             Instant remindedAt
     ) {}
 
+    record StatementPaymentRecord(
+            Long id,
+            Long salonId,
+            String billingMonth,
+            BigDecimal amount,
+            Long payosOrderCode,
+            String payosPaymentLinkId,
+            String payosCheckoutUrl,
+            String payosQrCode,
+            String status,
+            String paymentReference,
+            Instant paymentReportedAt,
+            Instant createdAt
+    ) {}
+
     Optional<StatementRecord> findBySalonIdAndMonth(Long salonId, LocalDate month);
+
+    Optional<StatementPaymentRecord> findPendingPayment(Long salonId, String billingMonth);
+
+    void savePayment(Long salonId, String billingMonth, BigDecimal amount, Long orderCode,
+                     String paymentLinkId, String checkoutUrl, String qrCode);
+
+    void markPaymentPaid(Long orderCode, String paymentReference, Instant reportedAt);
 
     void recordPayment(Long salonId, LocalDate month, BigDecimal additionalPaid, UUID confirmedBy);
 

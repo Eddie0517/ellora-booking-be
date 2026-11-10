@@ -51,7 +51,8 @@ public class SalonSubscriptionUseCase {
         if (request.enabled() && request.monthlyPrice() == null) {
             throw new BusinessRuleException("INVALID_PLAN_PRICE", "Gói đang mở bán phải có giá tháng");
         }
-        return toPlanResponse(subscriptions.savePlan(normalizedTier, request.monthlyPrice(), request.enabled(), adminId));
+        return toPlanResponse(subscriptions.savePlan(normalizedTier, request.monthlyPrice(), request.enabled(),
+                request.description(), request.features(), adminId));
     }
 
     @Transactional(readOnly = true)
@@ -241,12 +242,48 @@ public class SalonSubscriptionUseCase {
         return normalized;
     }
 
+    @Transactional
+    public void cancelPendingRequest(UUID ownerId, Long requestId) {
+        Long salonId = ownerSalon(ownerId);
+        SalonSubscriptionRequest request = subscriptions.findRequest(requestId)
+                .filter(value -> value.salonId().equals(salonId) && "PENDING".equals(value.status()))
+                .orElseThrow(() -> new BusinessRuleException("SUBSCRIPTION_REQUEST_NOT_FOUND", "Không tìm thấy yêu cầu đăng ký của salon"));
+        if (request.paymentReportedAt() != null) {
+            throw new BusinessRuleException("PAID_REQUEST_CANNOT_BE_CANCELLED", "Yêu cầu đã thanh toán không thể hủy");
+        }
+        subscriptions.cancelRequest(requestId);
+    }
+
     private String badge(String tier) { return tier == null ? "" : "VIP".equals(tier) ? "VIP" : "Standard"; }
 
     private SubscriptionPlanResponse toPlanResponse(SalonSubscriptionPlan plan) {
         String label = badge(plan.tier());
+        String defaultDesc = "VIP".equals(plan.tier())
+                ? "Gói cao cấp giúp salon bứt phá doanh thu, ưu tiên hiển thị hàng đầu và tiếp cận khách hàng tiềm năng."
+                : "Dành cho các cơ sở salon bắt đầu tiếp cận khách hàng trực tuyến với đầy đủ tính năng vận hành cơ bản.";
+        List<String> defaultFeatures = "VIP".equals(plan.tier())
+                ? List.of(
+                        "Tất cả quyền lợi của gói Standard",
+                        "Ghim nổi bật (Featured) trên trang khám phá và tìm kiếm",
+                        "Huy hiệu VIP Nổi bật sang trọng trên bản đồ và hồ sơ",
+                        "Ưu tiên hiển thị khi khách hàng tìm kiếm địa điểm gần nhất",
+                        "Báo cáo phân tích doanh thu, hiệu suất thợ và lịch hẹn chi tiết",
+                        "Tạo chương trình ưu đãi và mã giảm giá thu hút khách",
+                        "Hỗ trợ chăm sóc khách hàng ưu tiên 24/7 từ chuyên viên Ellora"
+                )
+                : List.of(
+                        "Quản lý thông tin và hồ sơ salon trên hệ thống",
+                        "Tiếp nhận và quản trị lịch hẹn khách hàng trực tuyến",
+                        "Quản lý danh sách dịch vụ làm móng và giá niêm yết",
+                        "Quản lý danh sách nhân sự và thợ làm móng",
+                        "Hiển thị vị trí trên bản đồ tìm kiếm",
+                        "Hỗ trợ kỹ thuật tiêu chuẩn từ đội ngũ Ellora"
+                );
+        String desc = plan.description() != null && !plan.description().isBlank() ? plan.description() : defaultDesc;
+        List<String> feats = plan.features() != null && !plan.features().isEmpty() ? plan.features() : defaultFeatures;
         return new SubscriptionPlanResponse(plan.tier(), label, "VIP".equals(plan.tier()) ? "Nổi bật" : "Cơ bản",
-                plan.monthlyPrice(), "VND", plan.enabled(), plan.enabled() && plan.monthlyPrice() != null);
+                plan.monthlyPrice(), "VND", plan.enabled(), plan.enabled() && plan.monthlyPrice() != null,
+                desc, feats);
     }
 
     private SubscriptionRequestResponse toRequestResponse(SalonSubscriptionRequest request) {

@@ -49,7 +49,12 @@ public class GetOwnerSalonUseCase {
                 salon.getAverageRating(),
                 salon.getTotalReviews(),
                 salon.getSubscriptionTier(),
-                salon.getImageUrls()
+                salon.getImageUrls(),
+                salon.getContractUrl(),
+                salon.getContractFileName(),
+                salon.getContractFileType(),
+                salon.getContractUploadedAt(),
+                salon.isOverdue()
         );
     }
 }

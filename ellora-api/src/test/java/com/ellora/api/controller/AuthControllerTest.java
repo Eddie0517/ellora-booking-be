@@ -8,11 +8,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.ellora.application.feature.auth.GetCurrentUserUseCase;
+import com.ellora.application.feature.auth.GoogleLoginUseCase;
 import com.ellora.application.feature.auth.LoginUserUseCase;
 import com.ellora.application.feature.auth.RefreshTokenUseCase;
 import com.ellora.application.feature.auth.RegisterUserUseCase;
 import com.ellora.application.feature.auth.ResendVerificationUseCase;
 import com.ellora.application.feature.auth.VerifyEmailUseCase;
+import com.ellora.application.feature.auth.dto.GoogleLoginRequest;
 import com.ellora.application.feature.auth.dto.LoginRequest;
 import com.ellora.application.feature.auth.dto.RegisterRequest;
 import com.ellora.application.feature.auth.dto.RegisterResponse;
@@ -54,6 +56,9 @@ class AuthControllerTest {
 
     @MockBean
     private LoginUserUseCase loginUserUseCase;
+
+    @MockBean
+    private GoogleLoginUseCase googleLoginUseCase;
 
     @MockBean
     private RefreshTokenUseCase refreshTokenUseCase;
@@ -132,5 +137,25 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").value("mock-access-token"))
                 .andExpect(jsonPath("$.user.email").value("test@example.com"));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/auth/google should return 200 OK and TokenResponse")
+    void shouldLoginWithGoogleSuccessfully() throws Exception {
+        UUID userId = UUID.randomUUID();
+        UserProfileResponse profile = new UserProfileResponse(
+                userId, "googleuser@example.com", "Google User", null, "https://avatar.png", "CUSTOMER", true);
+        TokenResponse tokenResponse = TokenResponse.of("mock-google-access", "mock-google-refresh", 900, profile);
+
+        when(googleLoginUseCase.execute(any(GoogleLoginRequest.class))).thenReturn(tokenResponse);
+
+        GoogleLoginRequest request = new GoogleLoginRequest("google-credential-token");
+
+        mockMvc.perform(post("/api/v1/auth/google")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value("mock-google-access"))
+                .andExpect(jsonPath("$.user.email").value("googleuser@example.com"));
     }
 }

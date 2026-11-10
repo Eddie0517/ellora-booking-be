@@ -24,7 +24,7 @@ public class SalonMapper {
             } catch (IllegalArgumentException ignored) {}
         }
 
-        return new Salon(
+        Salon domain = new Salon(
                 entity.getId(),
                 entity.getOwnerId(),
                 entity.getName(),
@@ -47,6 +47,12 @@ public class SalonMapper {
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );
+        domain.setContractUrl(entity.getContractUrl());
+        domain.setContractFileName(entity.getContractFileName());
+        domain.setContractFileType(entity.getContractFileType());
+        domain.setContractUploadedAt(entity.getContractUploadedAt());
+        domain.setOverdue(Boolean.TRUE.equals(entity.getIsOverdue()));
+        return domain;
     }
 
     public SalonEntity toEntity(Salon domain) {
@@ -74,6 +80,11 @@ public class SalonMapper {
                 .averageRating(domain.getAverageRating())
                 .totalReviews(domain.getTotalReviews())
                 .imageUrls(domain.getImageUrls() != null ? new java.util.ArrayList<>(domain.getImageUrls()) : new java.util.ArrayList<>())
+                .contractUrl(domain.getContractUrl())
+                .contractFileName(domain.getContractFileName())
+                .contractFileType(domain.getContractFileType())
+                .contractUploadedAt(domain.getContractUploadedAt())
+                .isOverdue(domain.isOverdue())
                 .createdAt(domain.getCreatedAt())
                 .updatedAt(domain.getUpdatedAt())
                 .build();

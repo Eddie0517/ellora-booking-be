@@ -13,10 +13,12 @@ public interface SalonSubscriptionRepository {
     List<SalonSubscriptionPlan> findPlans();
     Optional<SalonSubscriptionPlan> findPlan(String tier);
     SalonSubscriptionPlan savePlan(String tier, BigDecimal monthlyPrice, boolean enabled, UUID adminId);
+    SalonSubscriptionPlan savePlan(String tier, BigDecimal monthlyPrice, boolean enabled, String description, List<String> features, UUID adminId);
     Optional<Long> findSalonIdByOwner(UUID ownerId);
     Optional<SalonSubscriptionSnapshot> findCurrentSubscription(Long salonId);
     Optional<SalonSubscriptionRequest> findPendingRequest(Long salonId);
     Optional<SalonSubscriptionRequest> findRequest(Long requestId);
+    void cancelRequest(Long requestId);
     List<SalonSubscriptionRequest> findOwnerRequests(Long salonId, int offset, int limit);
     long countOwnerRequests(Long salonId);
     SalonSubscriptionRequest createRequest(Long salonId, String tier, BigDecimal quotedPrice);

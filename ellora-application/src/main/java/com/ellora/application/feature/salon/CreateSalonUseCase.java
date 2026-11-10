@@ -39,7 +39,9 @@ public class CreateSalonUseCase {
                 request.district(),
                 request.phone(),
                 request.email(),
-                request.description()
+                request.description(),
+                request.latitude(),
+                request.longitude()
         );
 
         Salon saved = salonRepository.save(salon);
