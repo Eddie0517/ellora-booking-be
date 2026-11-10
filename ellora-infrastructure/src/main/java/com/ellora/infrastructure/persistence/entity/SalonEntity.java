@@ -89,6 +89,22 @@ public class SalonEntity {
     @Builder.Default
     private java.util.List<String> imageUrls = new java.util.ArrayList<>();
 
+    @Column(name = "contract_url", columnDefinition = "TEXT")
+    private String contractUrl;
+
+    @Column(name = "contract_file_name")
+    private String contractFileName;
+
+    @Column(name = "contract_file_type", length = 50)
+    private String contractFileType;
+
+    @Column(name = "contract_uploaded_at")
+    private Instant contractUploadedAt;
+
+    @Column(name = "is_overdue", nullable = false)
+    @Builder.Default
+    private Boolean isOverdue = false;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

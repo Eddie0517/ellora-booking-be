@@ -33,16 +33,27 @@ public class PayOsPaymentGateway implements PaymentGateway {
 
     @Override
     public PaymentLink createSubscriptionLink(long orderCode, long amount, String description) {
+        return createPaymentLink(orderCode, amount, description, this.returnUrl, this.cancelUrl);
+    }
+
+    @Override
+    public PaymentLink createPaymentLink(long orderCode, long amount, String description, String retUrl, String canUrl) {
         if (clientId.isBlank() || apiKey.isBlank() || checksumKey.isBlank())
             throw new BusinessRuleException("PAYMENT_UNAVAILABLE", "PayOS chưa được cấu hình");
-        if (amount <= 0 || amount > Integer.MAX_VALUE || description.length() > 9)
+        if (amount <= 0 || amount > Integer.MAX_VALUE)
             throw new BusinessRuleException("INVALID_SUBSCRIPTION_PRICE", "Dữ liệu thanh toán không hợp lệ");
-        String canonical = "amount=" + amount + "&cancelUrl=" + cancelUrl + "&description=" + description
-                + "&orderCode=" + orderCode + "&returnUrl=" + returnUrl;
+        String safeDesc = (description != null && !description.isBlank())
+                ? (description.length() > 25 ? description.substring(0, 25) : description)
+                : "Thanh toan";
+        String effectiveReturnUrl = (retUrl != null && !retUrl.isBlank()) ? retUrl : this.returnUrl;
+        String effectiveCancelUrl = (canUrl != null && !canUrl.isBlank()) ? canUrl : this.cancelUrl;
+
+        String canonical = "amount=" + amount + "&cancelUrl=" + effectiveCancelUrl + "&description=" + safeDesc
+                + "&orderCode=" + orderCode + "&returnUrl=" + effectiveReturnUrl;
         try {
             String signature = sign(canonical);
             String body = mapper.writeValueAsString(Map.of("orderCode", orderCode, "amount", amount,
-                    "description", description, "cancelUrl", cancelUrl, "returnUrl", returnUrl, "signature", signature));
+                    "description", safeDesc, "cancelUrl", effectiveCancelUrl, "returnUrl", effectiveReturnUrl, "signature", signature));
             HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl + "/v2/payment-requests"))
                     .timeout(Duration.ofSeconds(20)).header("Content-Type", "application/json")
                     .header("x-client-id", clientId).header("x-api-key", apiKey)
@@ -52,10 +63,10 @@ public class PayOsPaymentGateway implements PaymentGateway {
             JsonNode data = result.path("data");
             if (response.statusCode() != 200 || !"00".equals(result.path("code").asText())
                     || data.path("paymentLinkId").asText().isBlank() || data.path("checkoutUrl").asText().isBlank())
-                throw new BusinessRuleException("PAYMENT_UNAVAILABLE", "PayOS không tạo được liên kết thanh toán");
+                throw new BusinessRuleException("PAYMENT_UNAVAILABLE", "PayOS không tạo được liên kết thanh toán: " + result.path("desc").asText("Lỗi không xác định"));
             return new PaymentLink(data.path("paymentLinkId").asText(), data.path("checkoutUrl").asText(), data.path("qrCode").asText());
         } catch (BusinessRuleException e) { throw e; }
-        catch (Exception e) { throw new BusinessRuleException("PAYMENT_UNAVAILABLE", "Không kết nối được PayOS"); }
+        catch (Exception e) { throw new BusinessRuleException("PAYMENT_UNAVAILABLE", "Không kết nối được PayOS: " + e.getMessage()); }
     }
 
     @Override

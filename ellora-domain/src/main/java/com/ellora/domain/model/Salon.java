@@ -27,6 +27,11 @@ public class Salon {
     private BigDecimal averageRating;
     private Integer totalReviews;
     private java.util.List<String> imageUrls = new java.util.ArrayList<>();
+    private String contractUrl;
+    private String contractFileName;
+    private String contractFileType;
+    private Instant contractUploadedAt;
+    private boolean overdue;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -86,6 +91,15 @@ public class Salon {
 
     public void approve() {
         this.status = SalonStatus.ACTIVE;
+        this.updatedAt = Instant.now();
+    }
+
+    public void approveWithContract(String contractUrl, String contractFileName, String contractFileType) {
+        this.status = SalonStatus.ACTIVE;
+        this.contractUrl = contractUrl;
+        this.contractFileName = contractFileName;
+        this.contractFileType = contractFileType;
+        this.contractUploadedAt = Instant.now();
         this.updatedAt = Instant.now();
     }
 
@@ -179,6 +193,21 @@ public class Salon {
 
     public java.util.List<String> getImageUrls() { return imageUrls; }
     public void setImageUrls(java.util.List<String> imageUrls) { this.imageUrls = imageUrls != null ? new java.util.ArrayList<>(imageUrls) : new java.util.ArrayList<>(); }
+
+    public String getContractUrl() { return contractUrl; }
+    public void setContractUrl(String contractUrl) { this.contractUrl = contractUrl; }
+
+    public String getContractFileName() { return contractFileName; }
+    public void setContractFileName(String contractFileName) { this.contractFileName = contractFileName; }
+
+    public String getContractFileType() { return contractFileType; }
+    public void setContractFileType(String contractFileType) { this.contractFileType = contractFileType; }
+
+    public Instant getContractUploadedAt() { return contractUploadedAt; }
+    public void setContractUploadedAt(Instant contractUploadedAt) { this.contractUploadedAt = contractUploadedAt; }
+
+    public boolean isOverdue() { return overdue; }
+    public void setOverdue(boolean overdue) { this.overdue = overdue; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

@@ -118,6 +118,7 @@ public class SalonRepositoryAdapter implements SalonRepository {
             Expression<Double> distanceExpr) {
         List<Predicate> predicates = new ArrayList<>();
         predicates.add(cb.equal(salon.get("status"), "ACTIVE"));
+        predicates.add(cb.or(cb.isNull(salon.get("isOverdue")), cb.isFalse(salon.get("isOverdue"))));
 
         if (city != null && !city.trim().isEmpty()) {
             String cityLower = "%" + city.trim().toLowerCase(Locale.ROOT) + "%";

@@ -61,7 +61,12 @@ public class GetPendingSalonsUseCase {
                 s.getAverageRating(),
                 s.getTotalReviews(),
                 s.getSubscriptionTier(),
-                s.getImageUrls()
+                s.getImageUrls(),
+                s.getContractUrl(),
+                s.getContractFileName(),
+                s.getContractFileType(),
+                s.getContractUploadedAt(),
+                s.isOverdue()
         )).toList();
 
         return PagedResult.of(items, normalizedPage, normalizedSize, totalItems);

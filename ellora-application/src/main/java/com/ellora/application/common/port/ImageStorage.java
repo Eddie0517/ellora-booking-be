@@ -9,5 +9,7 @@ public interface ImageStorage {
 
     String uploadImage(String folder, String filename, InputStream inputStream, long contentLength, String contentType);
 
+    String uploadContractFile(String folder, String filename, InputStream inputStream, long contentLength, String contentType);
+
     void deleteImage(String publicUrlOrId);
 }
