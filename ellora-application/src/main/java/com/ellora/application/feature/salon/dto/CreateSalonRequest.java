@@ -15,5 +15,11 @@ public record CreateSalonRequest(
     String district,
     String phone,
     String email,
-    String description
-) {}
+    String description,
+    Double latitude,
+    Double longitude
+) {
+    public CreateSalonRequest(String name, String address, String city, String district, String phone, String email, String description) {
+        this(name, address, city, district, phone, email, description, null, null);
+    }
+}

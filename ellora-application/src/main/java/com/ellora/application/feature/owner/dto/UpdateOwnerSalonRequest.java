@@ -29,6 +29,14 @@ public record UpdateOwnerSalonRequest(
         @Email(message = "Email không hợp lệ")
         String email,
 
-        String logoUrl
+        String logoUrl,
+
+        Double latitude,
+
+        Double longitude
 ) {
+    public UpdateOwnerSalonRequest(String name, String description, String address, String city,
+                                  String district, String phone, String email, String logoUrl) {
+        this(name, description, address, city, district, phone, email, logoUrl, null, null);
+    }
 }

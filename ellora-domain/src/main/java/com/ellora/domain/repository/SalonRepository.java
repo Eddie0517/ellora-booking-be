@@ -14,7 +14,11 @@ public interface SalonRepository {
 
     List<Salon> searchActiveSalons(String city, String keyword, int offset, int limit);
 
+    List<Salon> searchActiveSalons(String city, String keyword, Double latitude, Double longitude, Double radiusKm, String sort, int offset, int limit);
+
     long countActiveSalons(String city, String keyword);
+
+    long countActiveSalons(String city, String keyword, Double latitude, Double longitude, Double radiusKm);
 
     List<Salon> findByOwnerId(UUID ownerId);
 

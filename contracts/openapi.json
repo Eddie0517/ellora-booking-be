@@ -732,10 +732,17 @@
       "get" : {
         "tags" : [ "Salons" ],
         "summary" : "Search and list salons",
-        "description" : "Returns paginated list of active nail salons matching city and keyword filters",
+        "description" : "Returns paginated list of active nail salons matching location, coordinates, radius, and keyword filters",
         "operationId" : "getSalons",
         "parameters" : [ {
           "name" : "city",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "location",
           "in" : "query",
           "required" : false,
           "schema" : {
@@ -747,6 +754,38 @@
           "required" : false,
           "schema" : {
             "type" : "string"
+          }
+        }, {
+          "name" : "latitude",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }, {
+          "name" : "longitude",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }, {
+          "name" : "radiusKm",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "newest"
           }
         }, {
           "name" : "page",
@@ -3783,6 +3822,14 @@
           },
           "logoUrl" : {
             "type" : "string"
+          },
+          "latitude" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "longitude" : {
+            "type" : "number",
+            "format" : "double"
           }
         }
       },
@@ -4291,6 +4338,14 @@
           },
           "description" : {
             "type" : "string"
+          },
+          "latitude" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "longitude" : {
+            "type" : "number",
+            "format" : "double"
           }
         }
       },
@@ -5176,6 +5231,18 @@
           },
           "subscriptionTier" : {
             "type" : "string"
+          },
+          "latitude" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "longitude" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "distanceKm" : {
+            "type" : "number",
+            "format" : "double"
           }
         }
       },
