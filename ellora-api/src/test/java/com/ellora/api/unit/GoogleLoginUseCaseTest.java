@@ -132,7 +132,7 @@ class GoogleLoginUseCaseTest {
         BusinessRuleException ex = assertThrows(BusinessRuleException.class, () ->
                 googleLoginUseCase.execute(new GoogleLoginRequest("invalid-token")));
 
-        assertEquals("INVALID_TOKEN", ex.getCode());
+        assertEquals("INVALID_TOKEN", ex.getErrorCode());
     }
 
     @Test
@@ -145,7 +145,7 @@ class GoogleLoginUseCaseTest {
         BusinessRuleException ex = assertThrows(BusinessRuleException.class, () ->
                 googleLoginUseCase.execute(new GoogleLoginRequest("unverified-token")));
 
-        assertEquals("EMAIL_NOT_VERIFIED", ex.getCode());
+        assertEquals("EMAIL_NOT_VERIFIED", ex.getErrorCode());
     }
 
     @Test
@@ -174,6 +174,6 @@ class GoogleLoginUseCaseTest {
         BusinessRuleException ex = assertThrows(BusinessRuleException.class, () ->
                 googleLoginUseCase.execute(new GoogleLoginRequest("credential")));
 
-        assertEquals("ACCOUNT_INACTIVE", ex.getCode());
+        assertEquals("ACCOUNT_INACTIVE", ex.getErrorCode());
     }
 }
