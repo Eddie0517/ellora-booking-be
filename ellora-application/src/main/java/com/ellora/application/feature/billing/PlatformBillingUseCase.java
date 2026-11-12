@@ -7,11 +7,13 @@ import com.ellora.application.feature.billing.dto.BillingConfigResponse;
 import com.ellora.application.feature.billing.dto.PlatformBillResponse;
 import com.ellora.domain.exception.BusinessRuleException;
 import com.ellora.domain.model.Salon;
+import com.ellora.domain.model.User;
 import com.ellora.domain.repository.BookingRepository;
 import com.ellora.domain.repository.PlatformBillingSettingsRepository;
 import com.ellora.domain.repository.PlatformFeePolicyRepository;
 import com.ellora.domain.repository.PlatformStatementRepository;
 import com.ellora.domain.repository.SalonRepository;
+import com.ellora.domain.repository.UserRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
@@ -21,6 +23,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,6 +37,7 @@ public class PlatformBillingUseCase {
     private final PlatformBillingSettingsRepository billingSettingsRepository;
     private final PlatformStatementRepository statementRepository;
     private final SalonRepository salonRepository;
+    private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final MailSender mailSender;
     private final PaymentGateway paymentGateway;
@@ -136,23 +140,25 @@ public class PlatformBillingUseCase {
             throw new BusinessRuleException("NO_DUE", "Tiệm không còn phí phải thanh toán trong tháng này");
         }
 
-        Optional<PlatformStatementRepository.StatementRecord> existing = statementRepository.findBySalonIdAndMonth(salonId, month);
-        if (existing.isPresent() && existing.get().remindedAt() != null) {
-            if (existing.get().remindedAt().isAfter(Instant.now().minusSeconds(300))) {
-                throw new BusinessRuleException("TOO_FREQUENT", "Đã gửi nhắc thanh toán gần đây. Vui lòng đợi 5 phút");
-            }
-        }
-
         statementRepository.recordReminder(salonId, month);
 
-        if (salon.getEmail() != null && !salon.getEmail().isBlank()) {
-            mailSender.sendText(
-                    salon.getEmail(),
+        String targetEmail = salon.getEmail();
+        if ((targetEmail == null || targetEmail.isBlank()) && salon.getOwnerId() != null) {
+            targetEmail = userRepository.findById(salon.getOwnerId())
+                    .map(User::getEmail)
+                    .orElse(null);
+        }
+
+        if (targetEmail != null && !targetEmail.isBlank()) {
+            final String recipient = targetEmail;
+            final String salonName = salon.getName();
+            CompletableFuture.runAsync(() -> mailSender.sendText(
+                    recipient,
                     "Nhắc nhở thanh toán phí nền tảng tháng " + bill.month(),
-                    "Kính gửi " + salon.getName() + ",\n\nBạn có khoản phí nền tảng tháng " + bill.month()
+                    "Kính gửi " + salonName + ",\n\nBạn có khoản phí nền tảng tháng " + bill.month()
                             + " cần thanh toán: " + bill.due() + " ₫.\nHạn thanh toán: " + bill.dueDate()
                             + ".\nNội dung chuyển khoản: " + bill.transferContent() + "\n\nTrân trọng,\nĐội ngũ Ellora."
-            );
+            ));
         }
     }
 
@@ -222,9 +228,11 @@ public class PlatformBillingUseCase {
             try {
                 PaymentGateway.PaymentStatus status = paymentGateway.getSubscriptionPayment(pending.payosOrderCode());
                 if ("PAID".equalsIgnoreCase(status.status()) || status.amountPaid() >= pending.amount().longValue()) {
-                    statementRepository.markPaymentPaid(pending.payosOrderCode(), status.reference(), Instant.now());
-                    statementRepository.recordPayment(salon.getId(), month, pending.amount(), null);
-                    isSalonOverdue(salon.getId()); // Refresh overdue status
+                    boolean newlyMarked = statementRepository.markPaymentPaid(pending.payosOrderCode(), status.reference(), Instant.now());
+                    if (newlyMarked) {
+                        statementRepository.recordPayment(salon.getId(), month, pending.amount(), null);
+                        isSalonOverdue(salon.getId()); // Refresh overdue status
+                    }
                 }
             } catch (Exception ignored) {
                 // Ignore sync failures to allow retry

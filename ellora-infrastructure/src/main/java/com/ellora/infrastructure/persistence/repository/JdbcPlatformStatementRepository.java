@@ -75,10 +75,11 @@ public class JdbcPlatformStatementRepository implements PlatformStatementReposit
     }
 
     @Override
-    public void markPaymentPaid(Long orderCode, String paymentReference, Instant reportedAt) {
+    public boolean markPaymentPaid(Long orderCode, String paymentReference, Instant reportedAt) {
         String sql = "UPDATE platform_statement_payments SET status = 'PAID', payment_reference = ?, "
-                + "payment_reported_at = ?, updated_at = CURRENT_TIMESTAMP WHERE payos_order_code = ?";
-        jdbc.update(sql, paymentReference, Timestamp.from(reportedAt != null ? reportedAt : Instant.now()), orderCode);
+                + "payment_reported_at = ?, updated_at = CURRENT_TIMESTAMP WHERE payos_order_code = ? AND status = 'PENDING'";
+        int updated = jdbc.update(sql, paymentReference, Timestamp.from(reportedAt != null ? reportedAt : Instant.now()), orderCode);
+        return updated > 0;
     }
 
     @Override

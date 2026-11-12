@@ -40,7 +40,7 @@ public interface PlatformStatementRepository {
     void savePayment(Long salonId, String billingMonth, BigDecimal amount, Long orderCode,
                      String paymentLinkId, String checkoutUrl, String qrCode);
 
-    void markPaymentPaid(Long orderCode, String paymentReference, Instant reportedAt);
+    boolean markPaymentPaid(Long orderCode, String paymentReference, Instant reportedAt);
 
     void recordPayment(Long salonId, LocalDate month, BigDecimal additionalPaid, UUID confirmedBy);
 
