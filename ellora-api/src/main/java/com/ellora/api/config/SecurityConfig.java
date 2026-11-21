@@ -55,11 +55,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/healthz",
+                                "/actuator/health",
+                                "/actuator/health/**",
+                                // Test-only exception trigger controller (test sources only,
+                                // never packaged); required by GlobalExceptionHandlerTest.
+                                "/test/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/actuator/**",
-                                "/test/**",
                                 "/api/v1/auth/register",
                                 "/api/v1/auth/verify-email",
                                 "/api/v1/auth/resend-verification",

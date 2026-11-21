@@ -1,0 +1,117 @@
+# ==============================================================================
+# Production compose — Ellora Booking Backend
+#
+# Exposure model: Cloudflare Tunnel. No host port is published, no reverse
+# proxy and no certificate live on the VPS. `cloudflared` dials out to the
+# Cloudflare edge and forwards api.ellorabooking.online -> http://api:8080.
+#
+# Usage on the VPS (from /opt/ellora):
+#   docker compose --env-file .env.production --env-file .env.production.deploy \
+#     -f deployments/docker-compose.yml up -d --wait
+# ==============================================================================
+name: ellora-prod
+
+x-logging: &default-logging
+    driver: json-file
+    options:
+        max-size: "10m"
+        max-file: "3"
+
+services:
+    postgres:
+        image: postgres:${DB_VERSION:-17}-alpine
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB}
+            POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+            interval: 10s
+            timeout: 5s
+            retries: 12
+            start_period: 20s
+        mem_limit: ${POSTGRES_MEM_LIMIT:-384m}
+        logging: *default-logging
+        networks:
+            - app
+
+    redis:
+        image: redis:${CACHE_VERSION:-7}-alpine
+        restart: unless-stopped
+        command:
+            [
+                "redis-server",
+                "--maxmemory",
+                "${REDIS_MAXMEMORY:-192mb}",
+                "--maxmemory-policy",
+                "allkeys-lru",
+                "--appendonly",
+                "no",
+            ]
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 10s
+            timeout: 3s
+            retries: 10
+            start_period: 5s
+        mem_limit: ${REDIS_MEM_LIMIT:-128m}
+        logging: *default-logging
+        networks:
+            - app
+
+    api:
+        image: ${API_IMAGE:?set API_IMAGE in .env.production.deploy}
+        restart: unless-stopped
+        env_file:
+            # Relative to this compose file; the real file lives in the deploy root.
+            - ../.env.production
+        environment:
+            SPRING_PROFILES_ACTIVE: prod
+            SERVER_PORT: "8080"
+            DB_HOST: postgres
+            DB_PORT: "5432"
+            DB_NAME: ${POSTGRES_DB:?set POSTGRES_DB}
+            DB_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+            DB_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+            REDIS_HOST: redis
+            REDIS_PORT: "6379"
+        depends_on:
+            postgres:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+        # No `ports:` on purpose: the only ingress is the Cloudflare Tunnel.
+        healthcheck:
+            test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:8080/healthz > /dev/null 2>&1 || exit 1"]
+            interval: 15s
+            timeout: 5s
+            retries: 6
+            start_period: 60s
+        stop_grace_period: 30s
+        mem_limit: ${API_MEM_LIMIT:-768m}
+        logging: *default-logging
+        networks:
+            - app
+
+    cloudflared:
+        image: cloudflare/cloudflared:2024.12.2
+        restart: unless-stopped
+        command: ["tunnel", "--no-autoupdate", "run"]
+        environment:
+            TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?set CLOUDFLARE_TUNNEL_TOKEN}
+        depends_on:
+            api:
+                condition: service_healthy
+        mem_limit: ${CLOUDFLARED_MEM_LIMIT:-128m}
+        logging: *default-logging
+        networks:
+            - app
+
+volumes:
+    postgres-data:
+
+networks:
+    app:

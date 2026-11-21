@@ -1,0 +1,89 @@
+# CI — ellora
+#
+# Gate: Spotless format check, unit tests, ArchUnit boundary tests, Flyway on an
+# empty database, production image build, and a secret scan. No deploy here.
+name: CI — ellora
+
+on:
+    pull_request:
+    push:
+        branches: [main]
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    checks:
+        name: Lint, test and build image
+        runs-on: ubuntu-latest
+
+        # The Spring context tests boot the real application, which runs Flyway
+        # at startup. A real PostgreSQL (and Redis) keeps the tests honest and
+        # also proves that all migrations apply to an empty database.
+        services:
+            postgres:
+                image: postgres:17-alpine
+                env:
+                    POSTGRES_DB: ellora
+                    POSTGRES_USER: ellora
+                    POSTGRES_PASSWORD: ellora_ci_secret
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd "pg_isready -U ellora -d ellora"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 12
+            redis:
+                image: redis:7-alpine
+                ports:
+                    - 6379:6379
+                options: >-
+                    --health-cmd "redis-cli ping"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 12
+
+        env:
+            DB_HOST: localhost
+            DB_PORT: "5432"
+            DB_NAME: ellora
+            DB_USER: ellora
+            DB_PASSWORD: ellora_ci_secret
+            REDIS_HOST: localhost
+            REDIS_PORT: "6379"
+            MAIL_HOST: localhost
+            MAIL_PORT: "1025"
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Set up JDK 17
+              uses: actions/setup-java@v4
+              with:
+                  distribution: temurin
+                  java-version: "17"
+                  cache: maven
+
+            - name: Verify (Spotless + unit tests + ArchUnit + Flyway)
+              run: mvn -B -ntp verify
+
+            - name: Build production image
+              run: docker build -t ellora-api:ci .
+
+    secrets-scan:
+        name: Secret scan
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: gitleaks
+              uses: gitleaks/gitleaks-action@v2
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
