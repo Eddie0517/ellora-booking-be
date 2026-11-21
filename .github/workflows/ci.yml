@@ -1,0 +1,50 @@
+# CI — ellora
+#
+# Gate: Spotless format check, unit tests, ArchUnit boundary tests, production
+# image build, and a secret scan. No deploy here.
+name: CI — ellora
+
+on:
+    pull_request:
+    push:
+        branches: [main]
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    checks:
+        name: Lint, test and build image
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Set up JDK 17
+              uses: actions/setup-java@v4
+              with:
+                  distribution: temurin
+                  java-version: "17"
+                  cache: maven
+
+            - name: Verify (Spotless + unit tests + ArchUnit)
+              run: mvn -B -ntp verify
+
+            - name: Build production image
+              run: docker build -t ellora-api:ci .
+
+    secrets-scan:
+        name: Secret scan
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: gitleaks
+              uses: gitleaks/gitleaks-action@v2
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
