@@ -6,9 +6,9 @@
 # ---- Environment Secrets & Local Overrides ----
 # Never commit actual secret files
 .env
-.env.local
-.env.*.local
+.env.*
 !.env.example
+!.env.production.example
 
 # ---- Cryptographic Keys & Certificates ----
 *.pem
