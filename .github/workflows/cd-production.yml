@@ -152,9 +152,9 @@ jobs:
                      APP_SERVICES='${APP_SERVICES}' \
                      INFRA_SERVICES='${INFRA_SERVICES}' \
                      INFRA_PROFILE='' \
-                     DB_INIT_SERVICE='' \
+                     DB_INIT_SERVICE='none' \
                      DB_INIT_PROFILE='' \
-                     MIGRATE_SERVICES='disabled' \
+                     MIGRATE_SERVICES='none' \
                      MIGRATE_PROFILE='migrate' \
                      PROXY_SERVICE='${PROXY_SERVICE}' \
                      bash deployments/scripts/deploy-release.sh \

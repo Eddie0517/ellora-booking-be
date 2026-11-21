@@ -39,14 +39,34 @@ shift 3
 [ -f "$env_file" ] || fail "env file not found: $env_file"
 
 APP_SERVICES=${APP_SERVICES:-}
-INFRA_SERVICES=${INFRA_SERVICES:-postgres}
+
+# Optional phases: unset keeps the default, empty or "none" disables the phase.
+if [ -z "${INFRA_SERVICES+x}" ]; then
+  INFRA_SERVICES="postgres"
+fi
+if [ "$INFRA_SERVICES" = "none" ]; then
+  INFRA_SERVICES=""
+fi
+
+if [ -z "${DB_INIT_SERVICE+x}" ]; then
+  DB_INIT_SERVICE="db-init"
+fi
+if [ "$DB_INIT_SERVICE" = "none" ]; then
+  DB_INIT_SERVICE=""
+fi
+
+if [ -z "${PROXY_SERVICE+x}" ]; then
+  PROXY_SERVICE="proxy"
+fi
+if [ "$PROXY_SERVICE" = "none" ]; then
+  PROXY_SERVICE=""
+fi
+
 INFRA_PROFILE=${INFRA_PROFILE:-}
-DB_INIT_SERVICE=${DB_INIT_SERVICE:-db-init}
 DB_INIT_PROFILE=${DB_INIT_PROFILE:-init}
 MIGRATE_PREFIX=${MIGRATE_PREFIX:-migrate-}
 MIGRATE_PROFILE=${MIGRATE_PROFILE:-migrate}
 MIGRATE_SERVICES=${MIGRATE_SERVICES:-}
-PROXY_SERVICE=${PROXY_SERVICE:-proxy}
 WAIT_TIMEOUT=${WAIT_TIMEOUT:-240}
 
 services=()
@@ -162,16 +182,20 @@ fi
 
 log "running migrations: ${services[*]}"
 migration_services=()
-for service in "${services[@]}"; do
-  if [ -n "$MIGRATE_SERVICES" ]; then
-    case ",${MIGRATE_SERVICES// /}," in
-      *",${service},"*) migration_services+=("$service") ;;
-      *) ;;
-    esac
-  else
-    migration_services+=("$service")
-  fi
-done
+if [ "${MIGRATE_SERVICES:-}" = "none" ]; then
+  log "migrations explicitly disabled by the caller"
+else
+  for service in "${services[@]}"; do
+    if [ -n "${MIGRATE_SERVICES:-}" ]; then
+      case ",${MIGRATE_SERVICES// /}," in
+        *",${service},"*) migration_services+=("$service") ;;
+        *) ;;
+      esac
+    else
+      migration_services+=("$service")
+    fi
+  done
+fi
 
 migration_failed=0
 if [ "${#migration_services[@]}" -gt 0 ]; then
