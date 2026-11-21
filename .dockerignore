@@ -1,0 +1,45 @@
+# ==============================================================================
+# Docker build context exclusions
+# ==============================================================================
+
+# Version control & agent state
+.git
+.gitignore
+.gitattributes
+.agents
+.specify
+.opencode
+
+# Build output
+target
+*/target
+**/target
+*.jar
+*.war
+
+# Local environment & secrets
+.env
+.env.*
+!.env.example
+!.env.production.example
+*.pem
+*.key
+*.p12
+*.jks
+
+# Docs, specs and contracts are not needed to compile
+docs
+specs
+contracts
+scripts
+
+# IDE / OS noise
+.idea
+.vscode
+*.iml
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
