@@ -12,7 +12,7 @@ Trạng thái: `Confirmed` (đã chốt), `Proposed` (agent đề xuất, chờ 
 |---|---|---|
 | App slug | `ellora` | Confirmed |
 | Repo / owner | `github.com/Eddie0517/ellora-booking-be` | Confirmed |
-| Visibility | Private | Confirmed |
+| Visibility | Public | Confirmed |
 | Một service / monorepo | Monolith, **1 service deploy**: `api` | Confirmed |
 | Service và stack | `api` — Java 17, Spring Boot 3.2.5, Maven multi-module | Confirmed |
 | Người release | Eddie0517 | Confirmed |
