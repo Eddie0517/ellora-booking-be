@@ -26,6 +26,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,7 +43,14 @@ public class PlatformBillingUseCase {
     private final MailSender mailSender;
     private final PaymentGateway paymentGateway;
 
+    @Value("${app.payos.billing-return-url:http://localhost:5173/owner/billing}")
+    private String billingReturnUrl;
+
     private static final ZoneId ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
+
+    private String withQuery(String base, String query) {
+        return base + (base.contains("?") ? "&" : "?") + query;
+    }
 
     private LocalDate currentMonth() {
         return LocalDate.now(ZONE).withDayOfMonth(1);
@@ -183,8 +191,8 @@ public class PlatformBillingUseCase {
         String desc = ("Phi " + salon.getId() + " " + bill.month().replace("-", "")).trim();
         if (desc.length() > 25) desc = desc.substring(0, 25);
 
-        String returnUrl = "http://localhost:5173/owner/billing?orderCode=" + orderCode;
-        String cancelUrl = "http://localhost:5173/owner/billing?orderCode=" + orderCode + "&status=CANCELLED";
+        String returnUrl = withQuery(billingReturnUrl, "orderCode=" + orderCode);
+        String cancelUrl = withQuery(billingReturnUrl, "orderCode=" + orderCode + "&status=CANCELLED");
 
         PaymentGateway.PaymentLink link = paymentGateway.createPaymentLink(
                 orderCode,
