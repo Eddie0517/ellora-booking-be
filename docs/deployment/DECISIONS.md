@@ -147,3 +147,4 @@ Không còn câu hỏi nào chặn triển khai.
 | 2026-11-21 | Postgres container trên VPS | Tránh phụ thuộc SaaS, dữ liệu nằm cùng VPS | Eddie0517 |
 | 2026-11-21 | App secret ở VPS, CD secret ở GitHub | Tách quyền, không commit secret, không cần SOPS | Eddie0517 |
 | 2026-11-21 | Zone `ellorabooking.online` Active + route `api` → `http://api:8080` | DNS đã trỏ Cloudflare; tunnel sẵn sàng nhận connector | Eddie0517 |
+| 2026-11-21 | Deploy `v1.0.1` lên production thành công | Smoke public HTTPS, CORS, Flyway V1–V11, backup đều xanh | Eddie0517 |
