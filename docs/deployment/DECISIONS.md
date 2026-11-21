@@ -41,6 +41,7 @@ Chỉ một môi trường. Bù lại, mọi thay đổi phải qua CI xanh trư
 | TLS model | **Cloudflare Edge** (Cloudflare Tunnel) | Confirmed |
 | ACME email | Không áp dụng | Confirmed |
 | DNS provider | Cloudflare, zone `ellorabooking.online` | Confirmed |
+| Cloudflare Tunnel | `ellora-prod` — ID `4242f655-f2a1-45cd-991d-bebeaf40c719` | Confirmed |
 | Ai giữ token DNS / tunnel | Eddie0517, đặt trên VPS | Confirmed |
 
 ### 3.1 Mô hình expose: Cloudflare Tunnel
