@@ -10,6 +10,9 @@ Trạng thái hiện tại: **P0–P2 đã xong trong repo**. P3 (VPS bootstrap)
 
 ## 1. Cloudflare zone phải Active
 
+**Trạng thái: DONE 2026-11-21** — zone Active, NS `peter.ns.cloudflare.com`
+/ `colette.ns.cloudflare.com`. Giữ lại mục này làm bản ghi.
+
 - **Việc**: xác nhận `ellorabooking.online` đã Active trong Cloudflare.
 - **Vì sao cần người**: agent không có quyền vào tài khoản Cloudflare.
 - **Kiểm tra**:
@@ -29,6 +32,11 @@ Xác nhận: `ZONE_DONE` hoặc `BLOCKED: <lý do>`.
 ---
 
 ## 2. Tạo Cloudflare Tunnel
+
+**Trạng thái: DONE 2026-11-21** — tunnel `ellora-prod`
+(`4242f655-f2a1-45cd-991d-bebeaf40c719`), route
+`api.ellorabooking.online` → `http://api:8080`. Token: còn phải đưa vào
+`.env.production` ở mục 3.
 
 - **Việc**: theo [`cloudflare-tunnel.md`](cloudflare-tunnel.md) mục 1.
 - **Cần**: tên tunnel `ellora-prod`, Public Hostname

@@ -41,7 +41,9 @@ Chỉ một môi trường. Bù lại, mọi thay đổi phải qua CI xanh trư
 | TLS model | **Cloudflare Edge** (Cloudflare Tunnel) | Confirmed |
 | ACME email | Không áp dụng | Confirmed |
 | DNS provider | Cloudflare, zone `ellorabooking.online` | Confirmed |
+| Zone status | **Active** — NS `peter.ns.cloudflare.com`, `colette.ns.cloudflare.com` | Confirmed |
 | Cloudflare Tunnel | `ellora-prod` — ID `4242f655-f2a1-45cd-991d-bebeaf40c719` | Confirmed |
+| Public route | `api.ellorabooking.online` → `http://api:8080` (proxied) | Confirmed |
 | Ai giữ token DNS / tunnel | Eddie0517, đặt trên VPS | Confirmed |
 
 ### 3.1 Mô hình expose: Cloudflare Tunnel
@@ -54,6 +56,8 @@ Hệ quả:
 
 - Container `cloudflared` chạy outbound-only, route `api.ellorabooking.online`
   → `http://api:8080` trong network nội bộ của compose.
+- Route đã tạo trên dashboard; DNS `api.ellorabooking.online` đã trả về IP
+  Cloudflare edge (proxied, orange cloud).
 - TLS do Cloudflare edge đảm nhiệm; origin là HTTP trong Docker network.
 - **Không publish port nào ra host.**
 - Không có `nginx`/`lego`/`certbot` trong stack này.
@@ -126,9 +130,11 @@ trong Git và **không bị CD ghi đè**.
 
 ## 9. Câu hỏi mở
 
-| # | Câu hỏi | Ảnh hưởng | Tạm thời |
-|---|---|---|---|
-| 1 | Zone `ellorabooking.online` đã Active trên Cloudflare chưa? (hiện DNS NXDOMAIN) | Chặn P3/P4: không tạo được tunnel route và không có public HTTPS | Chờ dev xác nhận; không deploy production trước khi zone Active |
+Không còn câu hỏi nào chặn triển khai.
+
+| # | Câu hỏi | Trạng thái |
+|---|---|---|
+| 1 | Zone `ellorabooking.online` đã Active trên Cloudflare chưa? | **Resolved 2026-11-21** — Active, route `api` đã tạo |
 
 ## 10. Lịch sử quyết định
 
@@ -140,3 +146,4 @@ trong Git và **không bị CD ghi đè**.
 | 2026-11-21 | Cloudflare Tunnel thay nginx/lego | 80/443 và 8443 đều bị chiếm; tunnel không cần port/cert | Eddie0517 |
 | 2026-11-21 | Postgres container trên VPS | Tránh phụ thuộc SaaS, dữ liệu nằm cùng VPS | Eddie0517 |
 | 2026-11-21 | App secret ở VPS, CD secret ở GitHub | Tách quyền, không commit secret, không cần SOPS | Eddie0517 |
+| 2026-11-21 | Zone `ellorabooking.online` Active + route `api` → `http://api:8080` | DNS đã trỏ Cloudflare; tunnel sẵn sàng nhận connector | Eddie0517 |
