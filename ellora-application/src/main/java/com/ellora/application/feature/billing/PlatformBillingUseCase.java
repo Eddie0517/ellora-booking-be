@@ -43,10 +43,18 @@ public class PlatformBillingUseCase {
     private final MailSender mailSender;
     private final PaymentGateway paymentGateway;
 
-    @Value("${app.payos.billing-return-url:http://localhost:5173/owner/billing}")
-    private String billingReturnUrl;
+    @Value("${app.frontend-url:http://localhost:5173}")
+    private String frontendUrl;
 
     private static final ZoneId ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
+
+    private String billingReturnBase() {
+        String base = frontendUrl == null ? "" : frontendUrl.trim();
+        while (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        return base + "/owner/billing";
+    }
 
     private String withQuery(String base, String query) {
         return base + (base.contains("?") ? "&" : "?") + query;
@@ -191,8 +199,9 @@ public class PlatformBillingUseCase {
         String desc = ("Phi " + salon.getId() + " " + bill.month().replace("-", "")).trim();
         if (desc.length() > 25) desc = desc.substring(0, 25);
 
-        String returnUrl = withQuery(billingReturnUrl, "orderCode=" + orderCode);
-        String cancelUrl = withQuery(billingReturnUrl, "orderCode=" + orderCode + "&status=CANCELLED");
+        String billingBase = billingReturnBase();
+        String returnUrl = withQuery(billingBase, "orderCode=" + orderCode);
+        String cancelUrl = withQuery(billingBase, "orderCode=" + orderCode + "&status=CANCELLED");
 
         PaymentGateway.PaymentLink link = paymentGateway.createPaymentLink(
                 orderCode,
