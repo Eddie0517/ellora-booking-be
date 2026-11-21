@@ -61,14 +61,25 @@ required=(
   PAYOS_CHECKSUM_KEY
 )
 
-# shellcheck disable=SC1090
-set -a
-. "$env_file"
-set +a
+# Đọc một giá trị từ file env mà KHÔNG source (tránh vỡ khi value có space/ký tự đặc biệt).
+value_of() {
+  local key=$1
+  local raw
+  raw=$(awk -v key="$key" '
+    { sub(/\r$/, "") }
+    index($0, key "=") == 1 { v = substr($0, length(key) + 2) }
+    END { print v }
+  ' "$env_file")
+  case $raw in
+    \"*\") raw=${raw#\"}; raw=${raw%\"} ;;
+    \'*\') raw=${raw#\'}; raw=${raw%\'} ;;
+  esac
+  printf '%s' "$raw"
+}
 
 empty=()
 for key in "${required[@]}"; do
-  value=$(printf '%s' "${!key:-}")
+  value=$(value_of "$key")
   if [ -z "$value" ]; then
     empty+=("$key")
   fi

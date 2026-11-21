@@ -89,7 +89,7 @@ Các key **bắt buộc** phải có giá trị:
 |---|---|
 | `POSTGRES_PASSWORD` | tự sinh (>= 24 ký tự) |
 | `JWT_SECRET` | mục 3.2 |
-| `MAIL_USERNAME` / `MAIL_PASSWORD` | Gmail + App Password 16 ký tự |
+| `MAIL_USERNAME` / `MAIL_PASSWORD` | Gmail + App Password 16 ký tự — **bỏ hết dấu cách** (Google hiển thị dạng 4 nhóm 4 ký tự) |
 | `CLOUDINARY_*` | Cloudinary console |
 | `PAYOS_*` | my.payos.vn |
 | `GOOGLE_CLIENT_ID` | Google Cloud console |

@@ -36,14 +36,29 @@ KEEP_DAYS=${KEEP_DAYS:-7}
 [ -f "$ENV_FILE" ] || fail "env file not found: $ENV_FILE"
 [ -f "$COMPOSE_FILE" ] || fail "compose file not found: $COMPOSE_FILE"
 
-set -a
-# shellcheck disable=SC1090
-. "$ENV_FILE"
-set +a
+# Đọc giá trị env mà không source file (an toàn với space / ký tự đặc biệt).
+env_value() {
+  local key=$1
+  local raw
+  raw=$(awk -v key="$key" '
+    { sub(/\r$/, "") }
+    index($0, key "=") == 1 { v = substr($0, length(key) + 2) }
+    END { print v }
+  ' "$ENV_FILE")
+  case $raw in
+    \"*\") raw=${raw#\"}; raw=${raw%\"} ;;
+    \'*\') raw=${raw#\'}; raw=${raw%\'} ;;
+  esac
+  printf '%s' "$raw"
+}
 
-: "${POSTGRES_DB:?POSTGRES_DB is required}"
-: "${POSTGRES_USER:?POSTGRES_USER is required}"
-: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"
+POSTGRES_DB=$(env_value POSTGRES_DB)
+POSTGRES_USER=$(env_value POSTGRES_USER)
+POSTGRES_PASSWORD=$(env_value POSTGRES_PASSWORD)
+
+[ -n "$POSTGRES_DB" ] || fail "POSTGRES_DB is required"
+[ -n "$POSTGRES_USER" ] || fail "POSTGRES_USER is required"
+[ -n "$POSTGRES_PASSWORD" ] || fail "POSTGRES_PASSWORD is required"
 
 BACKUP_DIR=${BACKUP_DIR:-/opt/ellora-backups}
 base="${BACKUP_DIR}/${env_name}"
