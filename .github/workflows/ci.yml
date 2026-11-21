@@ -1,7 +1,7 @@
 # CI — ellora
 #
-# Gate: Spotless format check, unit tests, ArchUnit boundary tests, production
-# image build, and a secret scan. No deploy here.
+# Gate: Spotless format check, unit tests, ArchUnit boundary tests, Flyway on an
+# empty database, production image build, and a secret scan. No deploy here.
 name: CI — ellora
 
 on:
@@ -20,6 +20,45 @@ jobs:
     checks:
         name: Lint, test and build image
         runs-on: ubuntu-latest
+
+        # The Spring context tests boot the real application, which runs Flyway
+        # at startup. A real PostgreSQL (and Redis) keeps the tests honest and
+        # also proves that all migrations apply to an empty database.
+        services:
+            postgres:
+                image: postgres:17-alpine
+                env:
+                    POSTGRES_DB: ellora
+                    POSTGRES_USER: ellora
+                    POSTGRES_PASSWORD: ellora_ci_secret
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd "pg_isready -U ellora -d ellora"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 12
+            redis:
+                image: redis:7-alpine
+                ports:
+                    - 6379:6379
+                options: >-
+                    --health-cmd "redis-cli ping"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 12
+
+        env:
+            DB_HOST: localhost
+            DB_PORT: "5432"
+            DB_NAME: ellora
+            DB_USER: ellora
+            DB_PASSWORD: ellora_ci_secret
+            REDIS_HOST: localhost
+            REDIS_PORT: "6379"
+            MAIL_HOST: localhost
+            MAIL_PORT: "1025"
+
         steps:
             - uses: actions/checkout@v4
 
@@ -30,7 +69,7 @@ jobs:
                   java-version: "17"
                   cache: maven
 
-            - name: Verify (Spotless + unit tests + ArchUnit)
+            - name: Verify (Spotless + unit tests + ArchUnit + Flyway)
               run: mvn -B -ntp verify
 
             - name: Build production image
