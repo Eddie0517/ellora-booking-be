@@ -63,11 +63,15 @@ public class SalonRepositoryAdapter implements SalonRepository {
         if ("distance".equalsIgnoreCase(sort) && latitude != null && longitude != null) {
             orders.add(cb.asc(distanceExpr));
             orders.add(cb.desc(salon.get("id")));
-        } else if ("rating".equalsIgnoreCase(sort)) {
-            orders.add(cb.desc(cb.coalesce(salon.get("averageRating"), 0)));
-            orders.add(cb.desc(cb.coalesce(salon.get("totalReviews"), 0)));
-            orders.add(cb.desc(salon.get("id")));
         } else {
+            Expression<Integer> tierPriority = cb.selectCase()
+                    .when(cb.equal(salon.get("subscriptionTier"), "VIP"), 3)
+                    .when(cb.equal(salon.get("subscriptionTier"), "STANDARD"), 2)
+                    .otherwise(1)
+                    .as(Integer.class);
+            orders.add(cb.desc(tierPriority));
+            orders.add(cb.desc(cb.coalesce(salon.get("averageRating"), java.math.BigDecimal.ZERO)));
+            orders.add(cb.desc(cb.coalesce(salon.get("totalReviews"), 0)));
             orders.add(cb.desc(salon.get("id")));
         }
         query.orderBy(orders);
