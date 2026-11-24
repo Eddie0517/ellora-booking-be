@@ -27,7 +27,8 @@ public class GetCurrentUserUseCase {
                 user.getPhone(),
                 user.getAvatarUrl(),
                 user.getRole().name(),
-                user.getEmailVerifiedAt() != null
+                user.getEmailVerifiedAt() != null,
+                user.isLocked()
         );
     }
 }

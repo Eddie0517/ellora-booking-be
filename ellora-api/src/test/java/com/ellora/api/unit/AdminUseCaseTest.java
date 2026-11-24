@@ -65,7 +65,7 @@ class AdminUseCaseTest {
         approveSalonUseCase = new ApproveSalonUseCase(salonRepository, userRepository, imageStorage);
         rejectSalonUseCase = new RejectSalonUseCase(salonRepository);
         getAdminUsersUseCase = new GetAdminUsersUseCase(userRepository);
-        lockUserUseCase = new LockUserUseCase(userRepository, refreshTokenRepository);
+        lockUserUseCase = new LockUserUseCase(userRepository, refreshTokenRepository, salonRepository);
     }
 
     @Test
@@ -132,6 +132,7 @@ class AdminUseCaseTest {
         User user = new User();
         user.setId(userId);
         user.setEmail("user@test.com");
+        user.setRole(Role.CUSTOMER);
         user.setLocked(false);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
@@ -141,6 +142,32 @@ class AdminUseCaseTest {
 
         assertThat(response.locked()).isTrue();
         verify(refreshTokenRepository).revokeAllByUserId(userId);
+    }
+
+    @Test
+    @DisplayName("LockUser: When user is SALON_OWNER, suspends their salon")
+    void lockUser_whenSalonOwner_suspendsSalon() {
+        UUID ownerId = UUID.randomUUID();
+        User owner = new User();
+        owner.setId(ownerId);
+        owner.setEmail("owner@test.com");
+        owner.setRole(Role.SALON_OWNER);
+        owner.setLocked(false);
+
+        Salon salon = new Salon();
+        salon.setId(10L);
+        salon.setOwnerId(ownerId);
+        salon.setStatus(SalonStatus.ACTIVE);
+
+        when(userRepository.findById(ownerId)).thenReturn(Optional.of(owner));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(salonRepository.findByOwnerId(ownerId)).thenReturn(List.of(salon));
+
+        AdminUserResponse response = lockUserUseCase.execute(ownerId, true);
+
+        assertThat(response.locked()).isTrue();
+        assertThat(salon.getStatus()).isEqualTo(SalonStatus.SUSPENDED);
+        verify(salonRepository).save(salon);
     }
 
     @Test

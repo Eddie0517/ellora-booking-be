@@ -108,6 +108,11 @@ public class Salon {
         this.updatedAt = Instant.now();
     }
 
+    public void activate() {
+        this.status = SalonStatus.ACTIVE;
+        this.updatedAt = Instant.now();
+    }
+
     public void updateRatingStats(BigDecimal averageRating, int totalReviews) {
         this.averageRating = averageRating != null ? averageRating : BigDecimal.ZERO;
         this.totalReviews = totalReviews;

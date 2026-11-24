@@ -31,7 +31,8 @@ public class UpdateProfileUseCase {
                 saved.getPhone(),
                 saved.getAvatarUrl(),
                 saved.getRole().name(),
-                saved.getEmailVerifiedAt() != null
+                saved.getEmailVerifiedAt() != null,
+                saved.isLocked()
         );
     }
 }

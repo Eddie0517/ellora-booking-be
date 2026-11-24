@@ -3,6 +3,7 @@ package com.ellora.application.feature.booking;
 import com.ellora.application.feature.booking.dto.CreateBookingRequest;
 import com.ellora.application.feature.booking.dto.BookingDetailsResponse;
 import com.ellora.application.feature.salon.GetSalonAvailabilityUseCase;
+import com.ellora.domain.constant.SalonStatus;
 import com.ellora.domain.exception.BusinessRuleException;
 import com.ellora.domain.model.Booking;
 import com.ellora.domain.model.Employee;
@@ -35,6 +36,11 @@ public class CreateBookingUseCase {
         Salon salon = salonRepository.findById(request.salonId())
                 .orElseThrow(() -> new BusinessRuleException("SALON_NOT_FOUND",
                         "Không tìm thấy salon với mã định danh " + request.salonId()));
+
+        if (salon.getStatus() == SalonStatus.SUSPENDED) {
+            throw new BusinessRuleException("SALON_SUSPENDED",
+                    "Salon hiện đang tạm ngưng hoạt động, không thể nhận lịch hẹn mới.");
+        }
 
         if (salon.isOverdue()) {
             throw new BusinessRuleException("SALON_PAYMENT_OVERDUE",

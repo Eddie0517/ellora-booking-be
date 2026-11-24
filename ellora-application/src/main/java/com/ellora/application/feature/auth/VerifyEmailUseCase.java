@@ -103,7 +103,8 @@ public class VerifyEmailUseCase {
                 savedUser.getPhone(),
                 savedUser.getAvatarUrl(),
                 savedUser.getRole().name(),
-                true
+                true,
+                savedUser.isLocked()
         );
 
         return TokenResponse.of(accessToken, refreshTokenString, 900, profile);

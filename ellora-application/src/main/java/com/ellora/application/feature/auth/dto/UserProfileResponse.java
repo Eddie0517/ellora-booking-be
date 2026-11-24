@@ -9,5 +9,18 @@ public record UserProfileResponse(
     String phone,
     String avatarUrl,
     String role,
-    boolean emailVerified
-) {}
+    boolean emailVerified,
+    boolean locked
+) {
+    public UserProfileResponse(
+            UUID id,
+            String email,
+            String fullName,
+            String phone,
+            String avatarUrl,
+            String role,
+            boolean emailVerified
+    ) {
+        this(id, email, fullName, phone, avatarUrl, role, emailVerified, false);
+    }
+}

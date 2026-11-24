@@ -68,7 +68,8 @@ public class LoginUserUseCase {
                 user.getPhone(),
                 user.getAvatarUrl(),
                 user.getRole().name(),
-                user.getEmailVerifiedAt() != null
+                user.getEmailVerifiedAt() != null,
+                user.isLocked()
         );
 
         return TokenResponse.of(accessToken, refreshTokenString, 900, profile);

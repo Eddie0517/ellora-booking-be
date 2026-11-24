@@ -75,7 +75,8 @@ public class RefreshTokenUseCase {
                 user.getPhone(),
                 user.getAvatarUrl(),
                 user.getRole().name(),
-                user.getEmailVerifiedAt() != null
+                user.getEmailVerifiedAt() != null,
+                user.isLocked()
         );
 
         return TokenResponse.of(newAccessToken, newRefreshTokenString, 900, profile);

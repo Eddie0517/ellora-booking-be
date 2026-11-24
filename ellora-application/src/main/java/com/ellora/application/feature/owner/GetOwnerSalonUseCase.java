@@ -1,20 +1,34 @@
 package com.ellora.application.feature.owner;
 
 import com.ellora.application.feature.salon.dto.SalonDetailsResponse;
+import com.ellora.domain.constant.SalonStatus;
 import com.ellora.domain.exception.BusinessRuleException;
 import com.ellora.domain.model.Salon;
+import com.ellora.domain.model.User;
 import com.ellora.domain.repository.SalonRepository;
+import com.ellora.domain.repository.UserRepository;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
 public class GetOwnerSalonUseCase {
 
     private final SalonRepository salonRepository;
+    private final UserRepository userRepository;
+
+    @Autowired
+    public GetOwnerSalonUseCase(SalonRepository salonRepository, UserRepository userRepository) {
+        this.salonRepository = salonRepository;
+        this.userRepository = userRepository;
+    }
+
+    public GetOwnerSalonUseCase(SalonRepository salonRepository) {
+        this(salonRepository, null);
+    }
 
     @Transactional(readOnly = true)
     public SalonDetailsResponse execute(UUID ownerId) {
@@ -28,9 +42,12 @@ public class GetOwnerSalonUseCase {
         }
 
         Salon salon = salons.stream()
-                .filter(s -> s.getStatus() == com.ellora.domain.constant.SalonStatus.ACTIVE || s.getStatus() == com.ellora.domain.constant.SalonStatus.PENDING_APPROVAL)
+                .filter(s -> s.getStatus() == SalonStatus.ACTIVE || s.getStatus() == SalonStatus.PENDING_APPROVAL)
                 .findFirst()
                 .orElse(salons.get(0));
+
+        boolean isOwnerLocked = userRepository != null && userRepository.findById(ownerId).map(User::isLocked).orElse(false);
+        String finalStatus = isOwnerLocked ? SalonStatus.SUSPENDED.name() : (salon.getStatus() != null ? salon.getStatus().name() : null);
 
         return new SalonDetailsResponse(
                 salon.getId(),
@@ -43,7 +60,7 @@ public class GetOwnerSalonUseCase {
                 salon.getPhone(),
                 salon.getEmail(),
                 salon.getLogoUrl(),
-                salon.getStatus() != null ? salon.getStatus().name() : null,
+                finalStatus,
                 salon.getLatitude(),
                 salon.getLongitude(),
                 salon.getAverageRating(),

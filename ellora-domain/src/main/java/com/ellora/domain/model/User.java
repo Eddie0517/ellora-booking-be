@@ -58,7 +58,7 @@ public class User {
     }
 
     public boolean canAuthenticate() {
-        return enabled && !locked;
+        return enabled && (!locked || role == Role.SALON_OWNER);
     }
 
     public void updateProfile(String fullName, String phone, String avatarUrl) {
