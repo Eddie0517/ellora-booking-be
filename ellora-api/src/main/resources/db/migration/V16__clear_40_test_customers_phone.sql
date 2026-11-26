@@ -1,0 +1,48 @@
+-- Clear phone number (set to NULL) for the 40 test customer accounts
+
+UPDATE users
+SET phone = NULL,
+    updated_at = CURRENT_TIMESTAMP
+WHERE role = 'CUSTOMER'
+  AND email IN (
+    'minhanh01@gmail.com',
+    'ngocha02@gmail.com',
+    'thanhtam03@gmail.com',
+    'giahan04@gmail.com',
+    'khanhlinh05@gmail.com',
+    'thaovy06@gmail.com',
+    'baotran07@gmail.com',
+    'thuyduong08@gmail.com',
+    'phuongnhi09@gmail.com',
+    'ngoclan10@gmail.com',
+    'tuongvi11@gmail.com',
+    'myduyen12@gmail.com',
+    'kimngan13@gmail.com',
+    'yennhi14@gmail.com',
+    'kieuoanh15@gmail.com',
+    'baongoc16@gmail.com',
+    'quynhanh17@gmail.com',
+    'diemmy18@gmail.com',
+    'thanhtruc19@gmail.com',
+    'camtu20@gmail.com',
+    'xuanmai21@gmail.com',
+    'thuylinh22@gmail.com',
+    'hongnhung23@gmail.com',
+    'phuongthao24@gmail.com',
+    'lanhuong25@gmail.com',
+    'thanhhuyen26@gmail.com',
+    'ngocdiep27@gmail.com',
+    'minhthu28@gmail.com',
+    'quocbao29@gmail.com',
+    'hoangphuc30@gmail.com',
+    'tuankiet31@gmail.com',
+    'nhatnam32@gmail.com',
+    'ducthinh33@gmail.com',
+    'giahuy34@gmail.com',
+    'quangvinh35@gmail.com',
+    'trunghieu36@gmail.com',
+    'haidang37@gmail.com',
+    'minhquan38@gmail.com',
+    'thanhdat39@gmail.com',
+    'minhkhang40@gmail.com'
+  );
