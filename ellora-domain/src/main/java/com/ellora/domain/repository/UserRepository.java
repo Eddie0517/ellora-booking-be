@@ -19,5 +19,13 @@ public interface UserRepository {
 
     long count();
 
+    default java.util.List<User> search(String keyword, String role, int page, int pageSize) {
+        return findAll(page, pageSize);
+    }
+
+    default long count(String keyword, String role) {
+        return count();
+    }
+
     User save(User user);
 }

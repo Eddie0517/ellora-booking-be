@@ -100,9 +100,11 @@ public class AdminController {
     @GetMapping("/users")
     @Operation(summary = "List all users", description = "Returns paginated list of users across the platform")
     public ResponseEntity<PagedResult<AdminUserResponse>> getUsers(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String role,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
-        PagedResult<AdminUserResponse> response = getAdminUsersUseCase.execute(page, pageSize);
+        PagedResult<AdminUserResponse> response = getAdminUsersUseCase.execute(keyword, role, page, pageSize);
         return ResponseEntity.ok(response);
     }
 

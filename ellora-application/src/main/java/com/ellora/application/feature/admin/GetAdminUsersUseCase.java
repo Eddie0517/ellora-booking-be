@@ -17,11 +17,21 @@ public class GetAdminUsersUseCase {
 
     @Transactional(readOnly = true)
     public PagedResult<AdminUserResponse> execute(int page, int pageSize) {
+        return execute(null, null, page, pageSize);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResult<AdminUserResponse> execute(String keyword, String role, int page, int pageSize) {
         int normalizedPage = Math.max(page, 0);
         int normalizedSize = (pageSize <= 0 || pageSize > 100) ? 20 : pageSize;
 
-        List<User> users = userRepository.findAll(normalizedPage, normalizedSize);
-        long totalItems = userRepository.count();
+        boolean hasFilter = (keyword != null && !keyword.isBlank()) || (role != null && !role.isBlank());
+        List<User> users = hasFilter
+                ? userRepository.search(keyword, role, normalizedPage, normalizedSize)
+                : userRepository.findAll(normalizedPage, normalizedSize);
+        long totalItems = hasFilter
+                ? userRepository.count(keyword, role)
+                : userRepository.count();
 
         List<AdminUserResponse> items = users.stream().map(u -> new AdminUserResponse(
                 u.getId(),

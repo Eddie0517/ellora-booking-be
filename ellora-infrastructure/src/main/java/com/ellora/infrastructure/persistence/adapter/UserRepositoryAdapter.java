@@ -49,6 +49,28 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
+    public List<User> search(String keyword, String role, int page, int pageSize) {
+        String cleanKw = keyword == null ? "" : keyword.trim();
+        String cleanRole = role == null ? "" : role.trim();
+        return springDataUserRepository.searchUsers(
+                        cleanKw,
+                        cleanRole,
+                        PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"))
+                )
+                .stream()
+                .map(userMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public long count(String keyword, String role) {
+        String cleanKw = keyword == null ? "" : keyword.trim();
+        String cleanRole = role == null ? "" : role.trim();
+        return springDataUserRepository.searchUsers(cleanKw, cleanRole, PageRequest.of(0, 1))
+                .getTotalElements();
+    }
+
+    @Override
     public User save(User user) {
         UserEntity entity = userMapper.toEntity(user);
         UserEntity saved = springDataUserRepository.save(entity);
