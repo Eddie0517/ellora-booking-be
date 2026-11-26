@@ -143,26 +143,14 @@ public class SalonRepositoryAdapter implements SalonRepository {
                     ? "%" + unaccented.toLowerCase(Locale.ROOT) + "%"
                     : null;
 
-            // Subquery: Tìm kiếm trong danh mục và dịch vụ móng (nail_services) của salon
+            // 1. Subquery: Tìm theo tên hoặc mô tả dịch vụ móng đang hoạt động
             Subquery<Integer> serviceSubquery = query.subquery(Integer.class);
             Root<NailServiceEntity> serviceRoot = serviceSubquery.from(NailServiceEntity.class);
             serviceSubquery.select(cb.literal(1));
 
-            Subquery<Long> categorySubquery = query.subquery(Long.class);
-            Root<ServiceCategoryEntity> catRoot = categorySubquery.from(ServiceCategoryEntity.class);
-            categorySubquery.select(catRoot.get("id"));
-
-            List<Predicate> catPreds = new ArrayList<>();
-            catPreds.add(cb.like(cb.lower(catRoot.get("name")), kwLower));
-            if (kwUnaccentedLower != null) {
-                catPreds.add(cb.like(cb.lower(catRoot.get("name")), kwUnaccentedLower));
-            }
-            categorySubquery.where(cb.or(catPreds.toArray(Predicate[]::new)));
-
             List<Predicate> servicePreds = new ArrayList<>();
             servicePreds.add(cb.like(cb.lower(serviceRoot.get("name")), kwLower));
             servicePreds.add(cb.like(cb.lower(serviceRoot.get("description")), kwLower));
-            servicePreds.add(serviceRoot.get("categoryId").in(categorySubquery));
             if (kwUnaccentedLower != null) {
                 servicePreds.add(cb.like(cb.lower(serviceRoot.get("name")), kwUnaccentedLower));
                 servicePreds.add(cb.like(cb.lower(serviceRoot.get("description")), kwUnaccentedLower));
@@ -174,6 +162,25 @@ public class SalonRepositoryAdapter implements SalonRepository {
                     cb.or(servicePreds.toArray(Predicate[]::new))
             );
 
+            // 2. Subquery: Tìm theo danh mục của dịch vụ móng
+            Subquery<Integer> catSubquery = query.subquery(Integer.class);
+            Root<NailServiceEntity> catServiceRoot = catSubquery.from(NailServiceEntity.class);
+            Root<ServiceCategoryEntity> catRoot = catSubquery.from(ServiceCategoryEntity.class);
+            catSubquery.select(cb.literal(1));
+
+            List<Predicate> catPreds = new ArrayList<>();
+            catPreds.add(cb.like(cb.lower(catRoot.get("name")), kwLower));
+            if (kwUnaccentedLower != null) {
+                catPreds.add(cb.like(cb.lower(catRoot.get("name")), kwUnaccentedLower));
+            }
+
+            catSubquery.where(
+                    cb.equal(catServiceRoot.get("salonId"), salon.get("id")),
+                    cb.isTrue(catServiceRoot.get("active")),
+                    cb.equal(catServiceRoot.get("categoryId"), catRoot.get("id")),
+                    cb.or(catPreds.toArray(Predicate[]::new))
+            );
+
             List<Predicate> kwGroup = new ArrayList<>();
             kwGroup.add(cb.like(cb.lower(salon.get("name")), kwLower));
             kwGroup.add(cb.like(cb.lower(salon.get("description")), kwLower));
@@ -181,6 +188,7 @@ public class SalonRepositoryAdapter implements SalonRepository {
             kwGroup.add(cb.like(cb.lower(salon.get("city")), kwLower));
             kwGroup.add(cb.like(cb.lower(salon.get("district")), kwLower));
             kwGroup.add(cb.exists(serviceSubquery));
+            kwGroup.add(cb.exists(catSubquery));
 
             if (kwUnaccentedLower != null) {
                 kwGroup.add(cb.like(cb.lower(salon.get("name")), kwUnaccentedLower));
