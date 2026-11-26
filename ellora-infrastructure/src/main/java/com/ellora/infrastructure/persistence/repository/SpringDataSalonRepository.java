@@ -21,7 +21,8 @@ public interface SpringDataSalonRepository extends JpaRepository<SalonEntity, Lo
 
     @Query("SELECT s FROM SalonEntity s WHERE s.status = 'ACTIVE' AND (s.isOverdue IS NULL OR s.isOverdue = false) " +
            "AND (:city = '' OR LOWER(s.city) = LOWER(:city)) " +
-           "AND (:keyword = '' OR LOWER(s.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(s.address) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+           "AND (:keyword = '' OR LOWER(s.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(s.address) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "OR EXISTS (SELECT 1 FROM NailServiceEntity ns WHERE ns.salonId = s.id AND ns.active = true AND (LOWER(ns.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(ns.description) LIKE LOWER(CONCAT('%', :keyword, '%')))))")
     Page<SalonEntity> searchActiveSalons(
             @Param("city") String city,
             @Param("keyword") String keyword,

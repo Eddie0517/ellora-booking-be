@@ -3,7 +3,9 @@ package com.ellora.infrastructure.persistence.adapter;
 import com.ellora.domain.constant.SalonStatus;
 import com.ellora.domain.model.Salon;
 import com.ellora.domain.repository.SalonRepository;
+import com.ellora.infrastructure.persistence.entity.NailServiceEntity;
 import com.ellora.infrastructure.persistence.entity.SalonEntity;
+import com.ellora.infrastructure.persistence.entity.ServiceCategoryEntity;
 import com.ellora.infrastructure.persistence.mapper.SalonMapper;
 import com.ellora.infrastructure.persistence.repository.SpringDataSalonRepository;
 import jakarta.persistence.EntityManager;
@@ -54,7 +56,7 @@ public class SalonRepositoryAdapter implements SalonRepository {
         Root<SalonEntity> salon = query.from(SalonEntity.class);
 
         Expression<Double> distanceExpr = distanceExpression(cb, salon, latitude, longitude);
-        List<Predicate> predicates = buildPredicates(cb, salon, city, keyword, latitude, longitude, radiusKm, sort, distanceExpr);
+        List<Predicate> predicates = buildPredicates(cb, query, salon, city, keyword, latitude, longitude, radiusKm, sort, distanceExpr);
 
         query.multiselect(salon, distanceExpr);
         query.where(predicates.toArray(Predicate[]::new));
@@ -106,7 +108,7 @@ public class SalonRepositoryAdapter implements SalonRepository {
         Root<SalonEntity> countSalon = countQuery.from(SalonEntity.class);
 
         Expression<Double> countDistExpr = distanceExpression(cb, countSalon, latitude, longitude);
-        List<Predicate> countPredicates = buildPredicates(cb, countSalon, city, keyword, latitude, longitude, radiusKm, null, countDistExpr);
+        List<Predicate> countPredicates = buildPredicates(cb, countQuery, countSalon, city, keyword, latitude, longitude, radiusKm, null, countDistExpr);
 
         countQuery.select(cb.count(countSalon));
         countQuery.where(countPredicates.toArray(Predicate[]::new));
@@ -116,7 +118,7 @@ public class SalonRepositoryAdapter implements SalonRepository {
     }
 
     private List<Predicate> buildPredicates(
-            CriteriaBuilder cb, Root<SalonEntity> salon,
+            CriteriaBuilder cb, CommonAbstractCriteria query, Root<SalonEntity> salon,
             String city, String keyword,
             Double latitude, Double longitude, Double radiusKm, String sort,
             Expression<Double> distanceExpr) {
@@ -134,13 +136,61 @@ public class SalonRepositoryAdapter implements SalonRepository {
         }
 
         if (keyword != null && !keyword.trim().isEmpty()) {
-            String kwLower = "%" + keyword.trim().toLowerCase(Locale.ROOT) + "%";
-            predicates.add(cb.or(
-                    cb.like(cb.lower(salon.get("name")), kwLower),
-                    cb.like(cb.lower(salon.get("address")), kwLower),
-                    cb.like(cb.lower(salon.get("city")), kwLower),
-                    cb.like(cb.lower(salon.get("district")), kwLower)
-            ));
+            String cleanKw = keyword.trim();
+            String kwLower = "%" + cleanKw.toLowerCase(Locale.ROOT) + "%";
+            String unaccented = removeAccents(cleanKw);
+            String kwUnaccentedLower = (unaccented != null && !unaccented.equalsIgnoreCase(cleanKw))
+                    ? "%" + unaccented.toLowerCase(Locale.ROOT) + "%"
+                    : null;
+
+            // Subquery: Tìm kiếm trong danh mục và dịch vụ móng (nail_services) của salon
+            Subquery<Integer> serviceSubquery = query.subquery(Integer.class);
+            Root<NailServiceEntity> serviceRoot = serviceSubquery.from(NailServiceEntity.class);
+            serviceSubquery.select(cb.literal(1));
+
+            Subquery<Long> categorySubquery = query.subquery(Long.class);
+            Root<ServiceCategoryEntity> catRoot = categorySubquery.from(ServiceCategoryEntity.class);
+            categorySubquery.select(catRoot.get("id"));
+
+            List<Predicate> catPreds = new ArrayList<>();
+            catPreds.add(cb.like(cb.lower(catRoot.get("name")), kwLower));
+            if (kwUnaccentedLower != null) {
+                catPreds.add(cb.like(cb.lower(catRoot.get("name")), kwUnaccentedLower));
+            }
+            categorySubquery.where(cb.or(catPreds.toArray(Predicate[]::new)));
+
+            List<Predicate> servicePreds = new ArrayList<>();
+            servicePreds.add(cb.like(cb.lower(serviceRoot.get("name")), kwLower));
+            servicePreds.add(cb.like(cb.lower(serviceRoot.get("description")), kwLower));
+            servicePreds.add(serviceRoot.get("categoryId").in(categorySubquery));
+            if (kwUnaccentedLower != null) {
+                servicePreds.add(cb.like(cb.lower(serviceRoot.get("name")), kwUnaccentedLower));
+                servicePreds.add(cb.like(cb.lower(serviceRoot.get("description")), kwUnaccentedLower));
+            }
+
+            serviceSubquery.where(
+                    cb.equal(serviceRoot.get("salonId"), salon.get("id")),
+                    cb.isTrue(serviceRoot.get("active")),
+                    cb.or(servicePreds.toArray(Predicate[]::new))
+            );
+
+            List<Predicate> kwGroup = new ArrayList<>();
+            kwGroup.add(cb.like(cb.lower(salon.get("name")), kwLower));
+            kwGroup.add(cb.like(cb.lower(salon.get("description")), kwLower));
+            kwGroup.add(cb.like(cb.lower(salon.get("address")), kwLower));
+            kwGroup.add(cb.like(cb.lower(salon.get("city")), kwLower));
+            kwGroup.add(cb.like(cb.lower(salon.get("district")), kwLower));
+            kwGroup.add(cb.exists(serviceSubquery));
+
+            if (kwUnaccentedLower != null) {
+                kwGroup.add(cb.like(cb.lower(salon.get("name")), kwUnaccentedLower));
+                kwGroup.add(cb.like(cb.lower(salon.get("description")), kwUnaccentedLower));
+                kwGroup.add(cb.like(cb.lower(salon.get("address")), kwUnaccentedLower));
+                kwGroup.add(cb.like(cb.lower(salon.get("city")), kwUnaccentedLower));
+                kwGroup.add(cb.like(cb.lower(salon.get("district")), kwUnaccentedLower));
+            }
+
+            predicates.add(cb.or(kwGroup.toArray(Predicate[]::new)));
         }
 
         if (latitude != null && longitude != null && radiusKm != null && radiusKm > 0) {
@@ -151,6 +201,16 @@ public class SalonRepositoryAdapter implements SalonRepository {
         }
 
         return predicates;
+    }
+
+    private String removeAccents(String text) {
+        if (text == null || text.isBlank()) return null;
+        String nfd = java.text.Normalizer.normalize(text, java.text.Normalizer.Form.NFD);
+        return java.util.regex.Pattern.compile("\\p{InCombiningDiacriticalMarks}+")
+                .matcher(nfd)
+                .replaceAll("")
+                .replace('đ', 'd')
+                .replace('Đ', 'D');
     }
 
     private Predicate validPin(CriteriaBuilder cb, Root<SalonEntity> salon) {
